@@ -1,7 +1,6 @@
 package com.alsheuski;
 
 import com.alsheuski.sudoku.Solver;
-import com.alsheuski.sudoku.SudokuConstructor;
 import com.alsheuski.sudoku.domain.SudokuTable;
 
 public class Main {

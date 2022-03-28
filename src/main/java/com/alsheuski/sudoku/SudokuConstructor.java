@@ -12,7 +12,7 @@ public class SudokuConstructor {
 
   private final String[][] table;
 
-  public SudokuConstructor (String[][] table){
+  public SudokuConstructor(String[][] table) {
     this.table = table;
   }
 
