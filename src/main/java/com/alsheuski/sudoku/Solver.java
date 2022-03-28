@@ -1,22 +1,29 @@
 package com.alsheuski.sudoku;
 
+import com.alsheuski.sudoku.domain.Cell;
+import com.alsheuski.sudoku.domain.CellsContainer;
+import com.alsheuski.sudoku.domain.Square;
+import com.alsheuski.sudoku.domain.SudokuTable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static com.alsheuski.sudoku.SudokuTable.EMPTY_POSITION_SYMBOL;
+import static com.alsheuski.sudoku.domain.SudokuTable.EMPTY_POSITION_SYMBOL;
 import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.toList;
 
 public class Solver {
 
   private final SudokuTable table;
+  private final List<String> solvedLinePattern;
 
-  public Solver(SudokuTable table) {
-    this.table = table;
+  public Solver(String[][] table) {
+    this.table = new SudokuConstructor(table).create();
+    solvedLinePattern = buildLinePattern(this.table.getSquares().size());
   }
 
-  public void solve() {
+  public SudokuTable solve() {
 
     while (true) {
 
@@ -27,7 +34,7 @@ public class Solver {
               .collect(toList());
 
       if (squares.isEmpty()) {
-        return;
+        return table;
       }
 
       for (Square square : squares) {
@@ -38,15 +45,9 @@ public class Solver {
   }
 
   private List<String> findNotExistedElementsFromPivot(Square square) {
-
-    List<String> elements = new ArrayList<>((int) square.getEmptyCellsCount());
-    for (int i = 1; i <= square.getCells().size(); i++) {
-      String cellValue = String.valueOf(i);
-      if (square.getCells().stream().noneMatch(l -> l.getValue().equals(cellValue))) {
-        elements.add(cellValue);
-      }
-    }
-    return elements;
+    return solvedLinePattern.stream()
+        .filter(i -> square.getCells().stream().noneMatch(k -> k.getValue().equals(i)))
+        .collect(toList());
   }
 
   private void solveSquare(Square square, List<String> newCellsValues) {
@@ -88,5 +89,13 @@ public class Solver {
       result = result + i;
     }
     return result * newCellsValues.size();
+  }
+
+  private List<String> buildLinePattern(int elementsCount) {
+    List<String> elements = new ArrayList<>(elementsCount);
+    for (int i = 1; i <= elementsCount; i++) {
+      elements.add(String.valueOf(i));
+    }
+    return elements;
   }
 }

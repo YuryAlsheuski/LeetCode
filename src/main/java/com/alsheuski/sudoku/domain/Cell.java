@@ -1,4 +1,4 @@
-package com.alsheuski.sudoku;
+package com.alsheuski.sudoku.domain;
 
 import java.util.Objects;
 

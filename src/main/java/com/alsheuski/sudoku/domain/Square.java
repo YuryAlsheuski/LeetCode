@@ -1,4 +1,4 @@
-package com.alsheuski.sudoku;
+package com.alsheuski.sudoku.domain;
 
 public class Square extends CellsContainer {
 

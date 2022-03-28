@@ -1,31 +1,44 @@
 package com.alsheuski.sudoku;
 
+import com.alsheuski.sudoku.domain.Cell;
+import com.alsheuski.sudoku.domain.Line;
+import com.alsheuski.sudoku.domain.Square;
+import com.alsheuski.sudoku.domain.SudokuTable;
+
 import java.util.List;
 import java.util.Optional;
 
 public class SudokuConstructor {
 
-  public SudokuTable create(String[][] table) {
+  private final String[][] table;
+
+  public SudokuConstructor (String[][] table){
+    this.table = table;
+  }
+
+  public SudokuTable create() {
 
     SudokuTable sudokuTable = new SudokuTable();
 
     for (int i = 0; i < table.length; i++) {
       String[] line = table[i];
-      List<Line> rows = sudokuTable.getRows();
-      rows.add(i, new Line());
+      sudokuTable.getRows().add(i, new Line());
 
       for (int j = 0; j < line.length; j++) {
-        Cell cell = new Cell(j, i, line[j]);
-
-        fillColumn(sudokuTable.getColumns(), cell);
-
-        fillSquare(sudokuTable.getSquares(), cell);
-
-        rows.get(i).addCell(cell);
+        fillData(sudokuTable, j, i, line[j]);
       }
     }
 
     return sudokuTable;
+  }
+
+  private void fillData(SudokuTable sudokuTable, int x, int y, String value) {
+    Cell cell = new Cell(x, y, value);
+
+    fillColumn(sudokuTable.getColumns(), cell);
+    fillSquare(sudokuTable.getSquares(), cell);
+
+    sudokuTable.getRows().get(y).addCell(cell);
   }
 
   private void fillColumn(List<Line> columns, Cell cell) {
