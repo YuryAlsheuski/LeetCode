@@ -27,31 +27,31 @@ public class Solver {
 
     while (true) {
 
-      List<Square> squares =
+      List<Square> notCompletedSquares =
           table.getSquares().stream()
               .filter(i -> i.getEmptyCellsCount() > 0)
               .sorted(comparingLong(CellsContainer::getEmptyCellsCount))
               .collect(toList());
 
-      if (squares.isEmpty()) {
+      if (notCompletedSquares.isEmpty()) {
         return table;
       }
 
-      for (Square square : squares) {
-        List<String> val = findNotExistedElementsFromPivot(square);
+      for (Square square : notCompletedSquares) {
+        List<String> val = findNotExistedElements(square);
         solveSquare(square, val);
       }
     }
   }
 
-  private List<String> findNotExistedElementsFromPivot(Square square) {
+  private List<String> findNotExistedElements(Square square) {
     return solvedLinePattern.stream()
         .filter(i -> square.getCells().stream().noneMatch(k -> k.getValue().equals(i)))
         .collect(toList());
   }
 
-  private void solveSquare(Square square, List<String> newCellsValues) {
-    int limit = getIterationCount(newCellsValues);
+  private void solveSquare(Square square, List<String> possibleValues) {
+    int limit = getIterationCount(possibleValues);
     for (int k = 0; k < limit; k++) {
       List<Cell> emptyCells =
           square.getCells().stream()
@@ -63,23 +63,27 @@ public class Solver {
       }
 
       for (Cell cell : emptyCells) {
-
-        List<String> existedValues =
-            Stream.concat(table.getRows().stream(), table.getColumns().stream())
-                .filter(i -> i.getCells().contains(cell))
-                .flatMap(i -> i.getCells().stream())
-                .map(Cell::getValue)
-                .collect(toList());
-
-        List<String> appropriateValues =
-            newCellsValues.stream().filter(i -> !existedValues.contains(i)).collect(toList());
-
-        if (appropriateValues.size() == 1) {
-          String newValue = appropriateValues.stream().findFirst().get();
-          cell.setValue(newValue);
-          newCellsValues.remove(newValue);
-        }
+        solveCell(cell, possibleValues);
       }
+    }
+  }
+
+  private void solveCell(Cell cell, List<String> possibleValues) {
+
+    List<String> existedValues =
+        Stream.concat(table.getRows().stream(), table.getColumns().stream())
+            .filter(i -> i.getCells().contains(cell))
+            .flatMap(i -> i.getCells().stream())
+            .map(Cell::getValue)
+            .collect(toList());
+
+    List<String> appropriateValues =
+        possibleValues.stream().filter(i -> !existedValues.contains(i)).collect(toList());
+
+    if (appropriateValues.size() == 1) {
+      String newValue = appropriateValues.stream().findFirst().get();
+      cell.setValue(newValue);
+      possibleValues.remove(newValue);
     }
   }
 
