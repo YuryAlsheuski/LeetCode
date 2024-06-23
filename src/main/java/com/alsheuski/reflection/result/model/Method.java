@@ -10,6 +10,7 @@ public class Method {
   private final List<Argument> args;
   private final Type returnType;
   private final String name;
+  private boolean tagged;
 
   public Method(Type returnType, String name, List<Argument> args) {
     this.returnType = returnType;
@@ -27,6 +28,14 @@ public class Method {
 
   public String getName() {
     return name;
+  }
+
+  public boolean isTagged() {
+    return tagged;
+  }
+
+  public void setTagged(boolean tagged) {
+    this.tagged = tagged;
   }
 
   @Override

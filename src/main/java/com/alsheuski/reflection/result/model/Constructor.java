@@ -5,6 +5,7 @@ import java.util.Objects;
 
 public class Constructor {
   private final List<Argument> args;
+  private boolean tagged;
 
   public Constructor(List<Argument> args) {
     this.args = args;
@@ -20,6 +21,14 @@ public class Constructor {
     if (o == null || getClass() != o.getClass()) return false;
     Constructor that = (Constructor) o;
     return Objects.equals(args, that.args);
+  }
+
+  public boolean isTagged() {
+    return tagged;
+  }
+
+  public void setTagged(boolean tagged) {
+    this.tagged = tagged;
   }
 
   @Override
