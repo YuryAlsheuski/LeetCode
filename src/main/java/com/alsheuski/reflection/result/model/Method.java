@@ -2,6 +2,7 @@ package com.alsheuski.reflection.result.model;
 
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,6 +12,10 @@ public class Method {
   private final Type returnType;
   private final String name;
   private boolean tagged;
+
+  public Method(Type returnType, String name) {
+    this(returnType, name, new ArrayList<>());
+  }
 
   public Method(Type returnType, String name, List<Argument> args) {
     this.returnType = returnType;
@@ -36,6 +41,10 @@ public class Method {
 
   public void setTagged(boolean tagged) {
     this.tagged = tagged;
+  }
+
+  public void addArgument(Argument argument) {
+    args.add(argument);
   }
 
   @Override

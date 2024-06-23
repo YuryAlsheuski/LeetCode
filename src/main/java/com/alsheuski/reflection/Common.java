@@ -12,7 +12,7 @@ public class Common {
     this.childB = new ClassB("TEST_NAME");
   }
 
-  public String getALabel(List<ClassA> aas) {
+  public String getALabel(List<ClassA> aas,List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
