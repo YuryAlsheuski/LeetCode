@@ -1,16 +1,16 @@
 package com.alsheuski.reflection.result;
 
 import com.alsheuski.reflection.result.model.Argument;
-import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.model.MetaClass;
+import com.alsheuski.reflection.result.model.Method;
+import java.io.IOException;
+import java.util.Map;
+import java.util.function.Predicate;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
-import java.util.Map;
-import java.util.function.Predicate;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
@@ -40,15 +40,13 @@ public class MethodStructureVisitor extends MethodVisitor {
       return;
     }
 
-    /*if(!outerClasses.containsKey(path) && nextLevelIterator!=null){
-      var classPath = "target/classes/"+owner+".class";
+    if(!outerClasses.containsKey(owner) && nextLevelIterator!=null){
       try {
-        nextLevelIterator.loadClass(classPath);
+        nextLevelIterator.visitClass(owner);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
-    }*/
-
+    }
 
     //Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
     super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);

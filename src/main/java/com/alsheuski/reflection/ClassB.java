@@ -16,7 +16,15 @@ public class ClassB {
     this.name = name;
   }
 
+  private ClassB(){
+   name="";
+  }
+
   public String getName(int test) {
     return String.valueOf(test);
+  }
+
+  private String donotprint(){
+    return "not print";
   }
 }

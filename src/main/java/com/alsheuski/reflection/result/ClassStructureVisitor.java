@@ -1,7 +1,9 @@
 package com.alsheuski.reflection.result;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.getClassPath;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
@@ -22,21 +24,27 @@ import org.objectweb.asm.Type;
 public class ClassStructureVisitor extends ClassVisitor {
 
   private final Predicate<String> classPathFilter;
+  private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final int deep;
   private MetaClass currentClass;
 
-  public ClassStructureVisitor(int deep, Predicate<String> classPathFilter) {
-    this(deep, new HashMap<>(), classPathFilter);
+  public ClassStructureVisitor(
+      int deep, Predicate<String> classPathFilter, Predicate<Integer> accessFilter) {
+    this(deep, new HashMap<>(), classPathFilter, accessFilter);
   }
 
   ClassStructureVisitor(
-      int deep, Map<String, MetaClass> classNameToMetaClass, Predicate<String> classPathFilter) {
+      int deep,
+      Map<String, MetaClass> classNameToMetaClass,
+      Predicate<String> classPathFilter,
+      Predicate<Integer> accessFilter) {
 
     super(Opcodes.ASM9);
 
     this.classNameToMetaClass = classNameToMetaClass;
     this.classPathFilter = classPathFilter;
+    this.accessFilter = accessFilter;
     this.deep = deep;
     cv = new ClassWriter(COMPUTE_FRAMES);
   }
@@ -45,6 +53,9 @@ public class ClassStructureVisitor extends ClassVisitor {
   public MethodVisitor visitMethod(
       int access, String name, String descriptor, String signature, String[] exceptions) {
 
+    if (!accessFilter.test(access)) {
+      return null;
+    }
     return getMethodVisitorProvider().apply(getMethod(name, descriptor));
   }
 
@@ -55,7 +66,7 @@ public class ClassStructureVisitor extends ClassVisitor {
       classNameToMetaClass.put(className, currentClass);
     }
 
-    var classPath = "target/classes/" + className + ".class";
+    var classPath = getClassPath(className);
     var classBytes = Files.readAllBytes(Paths.get(classPath));
     var classReader = new ClassReader(classBytes);
 
@@ -79,7 +90,8 @@ public class ClassStructureVisitor extends ClassVisitor {
     var nextLevelVisitor =
         nextLevelDeep < 0
             ? null
-            : new ClassStructureVisitor(nextLevelDeep, classNameToMetaClass, classPathFilter);
+            : new ClassStructureVisitor(
+                nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter);
 
     return method ->
         new MethodStructureVisitor(nextLevelVisitor, classNameToMetaClass, method, classPathFilter);
@@ -89,6 +101,7 @@ public class ClassStructureVisitor extends ClassVisitor {
     var className = "com/alsheuski/reflection/Common";
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
-    new ClassStructureVisitor(1, allowedClassPaths).visitClass(className);
+    Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
+    new ClassStructureVisitor(1, allowedClassPaths, accessFilter).visitClass(className);
   }
 }
