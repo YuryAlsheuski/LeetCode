@@ -1,8 +1,12 @@
 package com.alsheuski.reflection.result.model;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import org.objectweb.asm.Type;
 
 public class MetaClass {
 
@@ -20,8 +24,7 @@ public class MetaClass {
 
   public MetaClass(String fullName, List<Method> methods) {
     this.fullName = fullName;
-    var parts = fullName.split("/");
-    this.name = parts[parts.length - 1];
+    this.name = getClassName(fullName);
     this.methods = methods;
   }
 
@@ -35,6 +38,16 @@ public class MetaClass {
 
   public void addMethod(Method method) {
     methods.add(method);
+  }
+
+  public Optional<Method> findMethod(Type returnType, String methodName, List<Argument> args) {
+    return methods.stream()
+        .filter(
+            method ->
+                method.getReturnType().equals(returnType)
+                    && method.getName().equals(methodName)
+                    && method.getArgs().equals(args))
+        .findFirst();
   }
 
   @Override

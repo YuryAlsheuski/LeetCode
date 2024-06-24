@@ -8,23 +8,23 @@ public class ClassB {
     this.name = name;
   }
 
-  protected ClassB(String name,String newone) {
+  protected ClassB(String name, String newone) {
     this.name = name;
   }
 
-  ClassB(String name,String newone,String threenewaone) {
+  ClassB(String name, String newone, String threenewaone) {
     this.name = name;
   }
 
-  private ClassB(){
-   name="";
+  private ClassB() {
+    name = "";
   }
 
   public String getName(int test) {
-    return String.valueOf(test);
+    return test + new ClassC().getCClassLabel();
   }
 
-  private String donotprint(){
+  private String donotprint() {
     return "not print";
   }
 }

@@ -1,6 +1,7 @@
 package com.alsheuski.reflection.result;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.getClassPath;
+import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
@@ -13,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Optional;
 import java.util.function.Predicate;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -60,26 +61,64 @@ public class ClassStructureVisitor extends ClassVisitor {
       return null;
     }
     var method = getMethod(name, descriptor);
-    if (method != null) {
-      method.addCallFromClass(node.getPreviousClass().getFullName());
-    }
-    return getMethodVisitorProvider().apply(method);
+    return new MethodStructureVisitor(this, method);
   }
 
-  public void visitClass(String className) throws IOException {
-
-    var currentClass = new MetaClass(className);
-    if (!classNameToMetaClass.containsKey(className) && classPathFilter.test(className)) {
-      classNameToMetaClass.put(className, currentClass);
-    }
+  public Map<String, MetaClass> visitAll(String rootClass) {
+    var currentClass = new MetaClass(rootClass);
     node.setCurrentClass(currentClass);
-    var classPath = getClassPath(className);
-    var classBytes = Files.readAllBytes(Paths.get(classPath));
-    var classReader = new ClassReader(classBytes);
+    visit(currentClass);
+    return getClassNameToMetaClass();
+  }
 
-    classReader.accept(this, EXPAND_FRAMES);
+  Map<String, MetaClass> getClassNameToMetaClass() {
+    return classNameToMetaClass;
+  }
 
-    System.err.println(classNameToMetaClass);
+  Predicate<String> getClassPathFilter() {
+    return classPathFilter;
+  }
+
+  Predicate<Integer> getAccessFilter() {
+    return accessFilter;
+  }
+
+  Node getNode() {
+    return node;
+  }
+
+  Optional<MetaClass> visitNext(MetaClass parent, String targetClassName) {
+    var nextLevelDeep = deep - 1;
+    if (nextLevelDeep < 0) {
+      return Optional.empty();
+    }
+
+    var targetClass = new MetaClass(targetClassName);
+    var node = new Node(parent, targetClass);
+
+    var nextLevelVisitor =
+        new ClassStructureVisitor(
+            nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter, node);
+
+    nextLevelVisitor.visit(targetClass);
+
+    return Optional.of(targetClass);
+  }
+
+  void visit(MetaClass targetClass) {
+    try {
+      var className = targetClass.getFullName();
+      var classPath = getClassPath(className);
+      var classBytes = Files.readAllBytes(Paths.get(classPath));
+      var classReader = new ClassReader(classBytes);
+
+      if (!classNameToMetaClass.containsKey(className) && classPathFilter.test(className)) {
+        classNameToMetaClass.put(className, targetClass);
+      }
+      classReader.accept(this, EXPAND_FRAMES);
+    } catch (IOException ex) {
+      System.err.println(ex.getMessage());
+    }
   }
 
   private Method getMethod(String name, String descriptor) {
@@ -87,32 +126,20 @@ public class ClassStructureVisitor extends ClassVisitor {
     if (!classNameToMetaClass.containsKey(currentClass.getFullName())) {
       return null;
     }
-    var isConstructor = "<init>".equals(name);
-    var methodName = isConstructor ? currentClass.getName() : name;
+    var constructor = isConstructor(name);
+    var methodName = constructor ? currentClass.getName() : name;
     var method =
-        new Method(Type.getMethodType(descriptor).getReturnType(), methodName, isConstructor);
+        new Method(Type.getMethodType(descriptor).getReturnType(), methodName, constructor);
     currentClass.addMethod(method);
     return method;
   }
 
-  private Function<Method, MethodStructureVisitor> getMethodVisitorProvider() {
-
-    int nextLevelDeep = deep - 1;
-    var nextLevelVisitor =
-        nextLevelDeep < 0
-            ? null
-            : new ClassStructureVisitor(
-                nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter, node);
-
-    return method ->
-        new MethodStructureVisitor(nextLevelVisitor, classNameToMetaClass, method, classPathFilter);
-  }
-
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) {
     var className = "com/alsheuski/reflection/Common";
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
     Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
-    new ClassStructureVisitor(1, allowedClassPaths, accessFilter).visitClass(className);
+    var result = new ClassStructureVisitor(2, allowedClassPaths, accessFilter).visitAll(className);
+    System.err.println(result);
   }
 }

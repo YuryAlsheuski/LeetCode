@@ -1,10 +1,8 @@
 package com.alsheuski.reflection.result.model;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.objectweb.asm.Type;
 
 public class Method {
@@ -13,14 +11,14 @@ public class Method {
   private final Type returnType;
   private final String name;
   private final boolean isConstructor;
-  private final Set<String> calledFrom;
+  private final List<String> calledFrom;
 
   public Method(Type returnType, String name, boolean isConstructor) {
     this.returnType = returnType;
     this.name = name;
     this.isConstructor = isConstructor;
     args = new ArrayList<>();
-    calledFrom = new HashSet<>();
+    calledFrom = new ArrayList<>();
   }
 
   public List<Argument> getArgs() {
