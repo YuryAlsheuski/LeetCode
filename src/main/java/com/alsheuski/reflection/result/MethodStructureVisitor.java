@@ -10,22 +10,22 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.Map;
+import java.util.function.Predicate;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.isProjectClass;
 import static com.alsheuski.reflection.result.util.LoaderUtil.prepareClassPath;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
   private final Map<String, OuterClass> outerClasses;
   private final ClassStructureIterator nextLevelIterator;
-  private final String root;
+  private final Predicate<String> classPathFilter;
   private final Method currentMethod;
 
-  public MethodStructureVisitor(ClassStructureIterator nextLevelIterator, Map<String, OuterClass> outerClasses, Method method, String root) {
+  public MethodStructureVisitor(ClassStructureIterator nextLevelIterator, Map<String, OuterClass> outerClasses, Method method, Predicate<String> classPathFilter) {
     super(Opcodes.ASM9);
     this.nextLevelIterator = nextLevelIterator;
     this.outerClasses = outerClasses;
-    this.root = root;
+    this.classPathFilter = classPathFilter;
     currentMethod = method;
   }
 
@@ -39,7 +39,7 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitMethodInsn(int opcode, String owner, String name, String descriptor, boolean isInterface) {
     System.err.println();
     var path = prepareClassPath(owner);
-    if (!isProjectClass(path, root)) {
+    if (!classPathFilter.test(path)) {
       return;
     }
 

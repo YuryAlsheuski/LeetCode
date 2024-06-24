@@ -14,6 +14,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.prepareClassPath;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
@@ -22,28 +24,25 @@ import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 public class ClassStructureIterator extends ClassVisitor {
 
   private final Map<String, OuterClass> outerClasses;
-  private final ClassStructureIterator nextLevelIterator;
-  private final String root;
+  private final Function<Method, MethodStructureVisitor> methodVisitorProvider;
   private OuterClass currentClass;
 
-  public ClassStructureIterator(int deep, String root) throws IOException {
-    this(deep, new HashMap<>(), root);
+  public ClassStructureIterator(int deep, Predicate<String> classPathFilter) throws IOException {
+    this(deep, new HashMap<>(), classPathFilter);
   }
 
-  ClassStructureIterator(int deep, Map<String, OuterClass> outerClasses, String root) throws IOException {
+  ClassStructureIterator(int deep, Map<String, OuterClass> outerClasses, Predicate<String> classPathFilter) throws IOException {
     super(Opcodes.ASM9);
-    int nextLevelDeep = deep - 1;
-    nextLevelIterator = nextLevelDeep < 0 ? null : new ClassStructureIterator(nextLevelDeep, outerClasses, root);
     this.outerClasses = outerClasses;
+    methodVisitorProvider = getMethodVisitorProvider(deep, classPathFilter);
     cv = new ClassWriter(COMPUTE_FRAMES);
-    this.root = root;
   }
 
   @Override
   public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
     var method = new Method(Type.getMethodType(descriptor).getReturnType(), name);
     currentClass.addMethod(method);
-    return new MethodStructureVisitor(nextLevelIterator, outerClasses, method, root);
+    return methodVisitorProvider.apply(method);
   }
 
   public void loadClass(String className) throws IOException {
@@ -63,12 +62,14 @@ public class ClassStructureIterator extends ClassVisitor {
     System.err.println(outerClasses);
   }
 
+  private Function<Method, MethodStructureVisitor> getMethodVisitorProvider(int deep, Predicate<String> classPathFilter) throws IOException {
+    int nextLevelDeep = deep - 1;
+    var nextLevelIterator = nextLevelDeep < 0 ? null : new ClassStructureIterator(nextLevelDeep, outerClasses, classPathFilter);
+    return method -> new MethodStructureVisitor(nextLevelIterator, outerClasses, method, classPathFilter);
+  }
+
   public static void main(String[] args) throws IOException {
     var className = "com/alsheuski/reflection/Common";
-    new ClassStructureIterator(1, "com.alsheuski").loadClass(className);
-    // Write the modified class
-    //  byte[] modifiedClass = classWriter.toByteArray();
-    // Files.write(Paths.get(className + "_Modified.class"), modifiedClass);
-
+    new ClassStructureIterator(1, path -> path.startsWith("com.alsheuski")).loadClass(className);
   }
 }

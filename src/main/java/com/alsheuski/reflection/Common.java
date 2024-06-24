@@ -1,31 +1,49 @@
 package com.alsheuski.reflection;
 
-import org.w3c.dom.ls.LSOutput;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Common {
-  private final ClassB childB;
+  private ClassB childB;
 
   public Common() {
     this.childB = new ClassB("TEST_NAME");
   }
 
-  public String getALabel(List<ClassA> aas,List<String> second) {
+  /*public Common(int one, Long two) {
+    childB = new ClassB("TEST_NAME", "", "");
+  }
+
+  private Common(String three) {
+
+  }
+
+  protected Common(Byte testProtectedConstr) {
+    childB = new ClassB("TEST_NAME", "protected constr");
+  }*/
+
+  public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
-  public void printClassBName(){
+  protected void testProtected() {
+
+  }
+
+  private void testPrivate() {
+
+  }
+
+  public void printClassBName() {
     System.out.println(childB.getName(666));
   }
 
-  public void commonInsider(CommonInsider insider){
+  public void commonInsider(CommonInsider insider) {
     System.err.println(insider.getStr());
   }
 
   public class CommonInsider {
-    public String getStr(){
+    public String getStr() {
       return "fdsfsd";
     }
   }

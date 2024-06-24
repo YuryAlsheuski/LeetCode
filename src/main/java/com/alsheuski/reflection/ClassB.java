@@ -8,6 +8,14 @@ public class ClassB {
     this.name = name;
   }
 
+  protected ClassB(String name,String newone) {
+    this.name = name;
+  }
+
+  ClassB(String name,String newone,String threenewaone) {
+    this.name = name;
+  }
+
   public String getName(int test) {
     return String.valueOf(test);
   }

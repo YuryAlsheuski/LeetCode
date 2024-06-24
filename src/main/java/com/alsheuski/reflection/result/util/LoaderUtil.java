@@ -12,8 +12,4 @@ public class LoaderUtil {
   public static String prepareClassPath(String path) {
     return path.replace('/', '.');
   }
-
-  public static boolean isProjectClass(String className , String root) {
-    return className.startsWith(root);
-  }
 }
