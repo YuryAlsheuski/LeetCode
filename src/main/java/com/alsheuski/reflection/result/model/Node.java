@@ -1,32 +1,32 @@
 package com.alsheuski.reflection.result.model;
 
 public class Node {
-  private String previousClass;
-  private String currentClass;
-  private Method currentClassMethod;
+  private MetaClass previousClass;
+  private MetaClass currentClass;
+  private Method currentMethod;
 
-
-  public String getPreviousClass() {
+  public MetaClass getPreviousClass() {
     return previousClass;
   }
 
-  public void setPreviousClass(String previousClass) {
+  public void setPreviousClass(MetaClass previousClass) {
     this.previousClass = previousClass;
   }
 
-  public String getCurrentClass() {
+  public MetaClass getCurrentClass() {
     return currentClass;
   }
 
-  public void setCurrentClass(String currentClass) {
+  public void setCurrentClass(MetaClass currentClass) {
+    this.previousClass =  this.currentClass;
     this.currentClass = currentClass;
   }
 
-  public Method getCurrentClassMethod() {
-    return currentClassMethod;
+  public Method getCurrentMethod() {
+    return currentMethod;
   }
 
-  public void setCurrentClassMethod(Method currentClassMethod) {
-    this.currentClassMethod = currentClassMethod;
+  public void setCurrentMethod(Method currentMethod) {
+    this.currentMethod = currentMethod;
   }
 }

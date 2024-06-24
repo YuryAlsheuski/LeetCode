@@ -7,6 +7,7 @@ import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
+import com.alsheuski.reflection.result.model.Node;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,18 +28,19 @@ public class ClassStructureVisitor extends ClassVisitor {
   private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final int deep;
-  private MetaClass currentClass;
+  private final Node node;
 
   public ClassStructureVisitor(
       int deep, Predicate<String> classPathFilter, Predicate<Integer> accessFilter) {
-    this(deep, new HashMap<>(), classPathFilter, accessFilter);
+    this(deep, new HashMap<>(), classPathFilter, accessFilter, new Node());
   }
 
   ClassStructureVisitor(
       int deep,
       Map<String, MetaClass> classNameToMetaClass,
       Predicate<String> classPathFilter,
-      Predicate<Integer> accessFilter) {
+      Predicate<Integer> accessFilter,
+      Node node) {
 
     super(Opcodes.ASM9);
 
@@ -46,6 +48,7 @@ public class ClassStructureVisitor extends ClassVisitor {
     this.classPathFilter = classPathFilter;
     this.accessFilter = accessFilter;
     this.deep = deep;
+    this.node = node;
     cv = new ClassWriter(COMPUTE_FRAMES);
   }
 
@@ -58,18 +61,18 @@ public class ClassStructureVisitor extends ClassVisitor {
     }
     var method = getMethod(name, descriptor);
     if (method != null) {
-      method.addCallFromClass(currentClass.getFullName());
+      method.addCallFromClass(node.getPreviousClass().getFullName());
     }
     return getMethodVisitorProvider().apply(method);
   }
 
   public void visitClass(String className) throws IOException {
 
+    var currentClass = new MetaClass(className);
     if (!classNameToMetaClass.containsKey(className) && classPathFilter.test(className)) {
-      currentClass = new MetaClass(className);
       classNameToMetaClass.put(className, currentClass);
     }
-
+    node.setCurrentClass(currentClass);
     var classPath = getClassPath(className);
     var classBytes = Files.readAllBytes(Paths.get(classPath));
     var classReader = new ClassReader(classBytes);
@@ -80,7 +83,8 @@ public class ClassStructureVisitor extends ClassVisitor {
   }
 
   private Method getMethod(String name, String descriptor) {
-    if (currentClass == null) {
+    var currentClass = node.getCurrentClass();
+    if (!classNameToMetaClass.containsKey(currentClass.getFullName())) {
       return null;
     }
     var isConstructor = "<init>".equals(name);
@@ -98,7 +102,7 @@ public class ClassStructureVisitor extends ClassVisitor {
         nextLevelDeep < 0
             ? null
             : new ClassStructureVisitor(
-                nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter);
+                nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter, node);
 
     return method ->
         new MethodStructureVisitor(nextLevelVisitor, classNameToMetaClass, method, classPathFilter);
