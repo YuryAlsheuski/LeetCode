@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class OuterClass {
+public class MetaClass {
 
   private final List<Constructor> constructors;
   private final List<Method> methods;
@@ -15,11 +15,11 @@ public class OuterClass {
     return name;
   }
 
-  public OuterClass(String fullName) {
+  public MetaClass(String fullName) {
     this(fullName, new ArrayList<>(), new ArrayList<>());
   }
 
-  public OuterClass(String fullName, List<Constructor> constructors, List<Method> methods) {
+  public MetaClass(String fullName, List<Constructor> constructors, List<Method> methods) {
     this.fullName = fullName;
     var parts = fullName.split("\\.");
     this.name = parts[parts.length - 1];
@@ -51,7 +51,7 @@ public class OuterClass {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    OuterClass that = (OuterClass) o;
+    MetaClass that = (MetaClass) o;
     return Objects.equals(fullName, that.fullName);
   }
 
