@@ -1,11 +1,11 @@
 package com.alsheuski.reflection;
 
 public class ClassC {
-  public String getCClassLabel(){
+  public String getCClassLabel() {
     return "from C class";
   }
 
-  protected void doNotCall(){
-
+  protected void doNotCall() {
+    new Common();
   }
 }
