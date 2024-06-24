@@ -8,7 +8,6 @@ import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
-import com.alsheuski.reflection.result.model.Node;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,11 +28,11 @@ public class ClassStructureVisitor extends ClassVisitor {
   private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final int deep;
-  private final Node node;
+  private MetaClass currentClass;
 
   public ClassStructureVisitor(
       int deep, Predicate<String> classPathFilter, Predicate<Integer> accessFilter) {
-    this(deep, new HashMap<>(), classPathFilter, accessFilter, new Node());
+    this(deep, new HashMap<>(), classPathFilter, accessFilter, null);
   }
 
   ClassStructureVisitor(
@@ -41,7 +40,7 @@ public class ClassStructureVisitor extends ClassVisitor {
       Map<String, MetaClass> classNameToMetaClass,
       Predicate<String> classPathFilter,
       Predicate<Integer> accessFilter,
-      Node node) {
+      MetaClass currentClass) {
 
     super(Opcodes.ASM9);
 
@@ -49,7 +48,7 @@ public class ClassStructureVisitor extends ClassVisitor {
     this.classPathFilter = classPathFilter;
     this.accessFilter = accessFilter;
     this.deep = deep;
-    this.node = node;
+    this. currentClass =  currentClass;
     cv = new ClassWriter(COMPUTE_FRAMES);
   }
 
@@ -66,7 +65,7 @@ public class ClassStructureVisitor extends ClassVisitor {
 
   public Map<String, MetaClass> visitAll(String rootClass) {
     var currentClass = new MetaClass(rootClass);
-    node.setCurrentClass(currentClass);
+    this.currentClass=currentClass;
     visit(currentClass);
     return getClassNameToMetaClass();
   }
@@ -82,23 +81,22 @@ public class ClassStructureVisitor extends ClassVisitor {
   Predicate<Integer> getAccessFilter() {
     return accessFilter;
   }
-
-  Node getNode() {
-    return node;
+  
+  MetaClass getCurrentClass() {
+    return currentClass;
   }
 
-  Optional<MetaClass> visitNext(MetaClass parent, String targetClassName) {
+  Optional<MetaClass> visitNext(String targetClassName) {
     var nextLevelDeep = deep - 1;
     if (nextLevelDeep < 0) {
       return Optional.empty();
     }
 
     var targetClass = new MetaClass(targetClassName);
-    var node = new Node(parent, targetClass);
 
     var nextLevelVisitor =
         new ClassStructureVisitor(
-            nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter, node);
+            nextLevelDeep, classNameToMetaClass, classPathFilter, accessFilter, targetClass);
 
     nextLevelVisitor.visit(targetClass);
 
@@ -122,7 +120,6 @@ public class ClassStructureVisitor extends ClassVisitor {
   }
 
   private Method getMethod(String name, String descriptor) {
-    var currentClass = node.getCurrentClass();
     if (!classNameToMetaClass.containsKey(currentClass.getFullName())) {
       return null;
     }

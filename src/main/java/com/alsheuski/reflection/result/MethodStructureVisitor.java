@@ -44,7 +44,7 @@ public class MethodStructureVisitor extends MethodVisitor {
     }
     var clazz = classVisitor.getClassNameToMetaClass().get(owner);
     if (clazz == null) {
-      var maybeNextClass = classVisitor.visitNext(classVisitor.getNode().getCurrentClass(), owner);
+      var maybeNextClass = classVisitor.visitNext(owner);
       if (maybeNextClass.isPresent()) {
         clazz = maybeNextClass.get();
       } else {
@@ -59,7 +59,7 @@ public class MethodStructureVisitor extends MethodVisitor {
             .collect(toList());
     var methodName = isConstructor(name) ? getClassName(owner) : name;
     var maybeMethod = clazz.findMethod(type.getReturnType(), methodName, args);
-    var callee = classVisitor.getNode().getCurrentClass();
+    var callee = classVisitor.getCurrentClass();
     maybeMethod.ifPresent(method -> method.addCallFromClass(callee.getFullName()));
 
     // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
