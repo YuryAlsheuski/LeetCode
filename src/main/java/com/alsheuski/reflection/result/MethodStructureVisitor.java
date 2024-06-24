@@ -5,6 +5,7 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static java.util.stream.Collectors.toList;
 
 import com.alsheuski.reflection.result.model.Argument;
+import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import java.util.Arrays;
 import org.objectweb.asm.Handle;
@@ -16,12 +17,15 @@ import org.objectweb.asm.Type;
 public class MethodStructureVisitor extends MethodVisitor {
 
   private final ClassStructureVisitor classVisitor;
+  private final MetaClass currentClass;
   private final Method currentMethod;
 
-  public MethodStructureVisitor(ClassStructureVisitor classVisitor, Method method) {
+  public MethodStructureVisitor(
+      ClassStructureVisitor classVisitor, MetaClass currentClass, Method currentMethod) {
     super(Opcodes.ASM9);
     this.classVisitor = classVisitor;
-    currentMethod = method;
+    this.currentClass = currentClass;
+    this.currentMethod = currentMethod;
   }
 
   @Override
@@ -59,8 +63,8 @@ public class MethodStructureVisitor extends MethodVisitor {
             .collect(toList());
     var methodName = isConstructor(name) ? getClassName(owner) : name;
     var maybeMethod = clazz.findMethod(type.getReturnType(), methodName, args);
-    var callee = classVisitor.getCurrentClass();
-    maybeMethod.ifPresent(method -> method.addCallFromClass(callee.getFullName()));
+
+    maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
 
     // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
     super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);

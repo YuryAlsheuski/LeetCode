@@ -7,5 +7,6 @@ public class ClassC {
 
   protected void doNotCall() {
     new Common();
+    new ClassB("");
   }
 }
