@@ -1,26 +1,26 @@
 package com.alsheuski.reflection.result.model;
 
-import org.objectweb.asm.Type;
-
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import org.objectweb.asm.Type;
 
 public class Method {
 
   private final List<Argument> args;
   private final Type returnType;
   private final String name;
-  private boolean tagged;
+  private final boolean isConstructor;
+  private final Set<String> calledFrom;
 
-  public Method(Type returnType, String name) {
-    this(returnType, name, new ArrayList<>());
-  }
-
-  public Method(Type returnType, String name, List<Argument> args) {
+  public Method(Type returnType, String name, boolean isConstructor) {
     this.returnType = returnType;
     this.name = name;
-    this.args = args;
+    this.isConstructor = isConstructor;
+    args = new ArrayList<>();
+    calledFrom = new HashSet<>();
   }
 
   public List<Argument> getArgs() {
@@ -35,16 +35,20 @@ public class Method {
     return name;
   }
 
-  public boolean isTagged() {
-    return tagged;
-  }
-
-  public void setTagged(boolean tagged) {
-    this.tagged = tagged;
-  }
-
   public void addArgument(Argument argument) {
     args.add(argument);
+  }
+
+  public void addCallFromClass(String className) {
+    calledFrom.add(className);
+  }
+
+  public boolean isCalledFrom(String className) {
+    return calledFrom.contains(className);
+  }
+
+  public boolean getIsConstructor() {
+    return isConstructor;
   }
 
   @Override
@@ -52,11 +56,14 @@ public class Method {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Method method = (Method) o;
-    return Objects.equals(args, method.args) && Objects.equals(returnType, method.returnType) && Objects.equals(name, method.name);
+    return isConstructor == method.isConstructor
+        && Objects.equals(args, method.args)
+        && Objects.equals(returnType, method.returnType)
+        && Objects.equals(name, method.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(args, returnType, name);
+    return Objects.hash(args, returnType, name, isConstructor);
   }
 }

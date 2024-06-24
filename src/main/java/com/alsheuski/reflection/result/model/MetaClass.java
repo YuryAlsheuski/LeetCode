@@ -6,7 +6,6 @@ import java.util.Objects;
 
 public class MetaClass {
 
-  private final List<Constructor> constructors;
   private final List<Method> methods;
   private final String name;
   private final String fullName;
@@ -16,19 +15,14 @@ public class MetaClass {
   }
 
   public MetaClass(String fullName) {
-    this(fullName, new ArrayList<>(), new ArrayList<>());
+    this(fullName, new ArrayList<>());
   }
 
-  public MetaClass(String fullName, List<Constructor> constructors, List<Method> methods) {
+  public MetaClass(String fullName, List<Method> methods) {
     this.fullName = fullName;
-    var parts = fullName.split("\\.");
+    var parts = fullName.split("/");
     this.name = parts[parts.length - 1];
-    this.constructors = constructors;
     this.methods = methods;
-  }
-
-  public List<Constructor> getConstructors() {
-    return constructors;
   }
 
   public List<Method> getMethods() {
@@ -37,10 +31,6 @@ public class MetaClass {
 
   public String getFullName() {
     return fullName;
-  }
-
-  public void addConstructor(Constructor constructor) {
-    constructors.add(constructor);
   }
 
   public void addMethod(Method method) {

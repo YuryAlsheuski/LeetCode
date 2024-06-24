@@ -56,7 +56,11 @@ public class ClassStructureVisitor extends ClassVisitor {
     if (!accessFilter.test(access)) {
       return null;
     }
-    return getMethodVisitorProvider().apply(getMethod(name, descriptor));
+    var method = getMethod(name, descriptor);
+    if (method != null) {
+      method.addCallFromClass(currentClass.getFullName());
+    }
+    return getMethodVisitorProvider().apply(method);
   }
 
   public void visitClass(String className) throws IOException {
@@ -79,7 +83,10 @@ public class ClassStructureVisitor extends ClassVisitor {
     if (currentClass == null) {
       return null;
     }
-    var method = new Method(Type.getMethodType(descriptor).getReturnType(), name);
+    var isConstructor = "<init>".equals(name);
+    var methodName = isConstructor ? currentClass.getName() : name;
+    var method =
+        new Method(Type.getMethodType(descriptor).getReturnType(), methodName, isConstructor);
     currentClass.addMethod(method);
     return method;
   }
