@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -47,34 +48,13 @@ public class ClassStructureVisitor {
   }
 
   public Map<String, MetaClass> visitAll(String rootClass) {
-    visit(new MetaClass(rootClass));
-    return getClassNameToMetaClass();
-  }
-
-  Map<String, MetaClass> getClassNameToMetaClass() {
+    visit(rootClass, rootClass);
     return classNameToMetaClass;
   }
 
-  Predicate<String> getClassPathFilter() {
-    return classPathFilter;
-  }
-
-  Predicate<Integer> getAccessFilter() {
-    return accessFilter;
-  }
-
-  Optional<MetaClass> visitNext(String targetClassName) {
-    var nextLevelDeep = deep - 1; // todo do not work need to change
-    /* if (nextLevelDeep < 0) {
-      return Optional.empty();
-    }*/
-    var targetClass = new MetaClass(targetClassName);
-    visit(targetClass);
-    return Optional.of(targetClass);
-  }
-
-  void visit(MetaClass targetClass) {
+  private MetaClass visit(String current, String next) {
     try {
+      var targetClass = new MetaClass(next);
       var className = targetClass.getFullName();
       var classPath = getClassPath(className);
       var classBytes = Files.readAllBytes(Paths.get(classPath));
@@ -84,9 +64,11 @@ public class ClassStructureVisitor {
         classNameToMetaClass.put(className, targetClass);
       }
       classReader.accept(getInternalVisitor(targetClass), EXPAND_FRAMES);
+      return targetClass;
     } catch (IOException ex) {
       System.err.println(ex.getMessage());
     }
+    return null;
   }
 
   private ClassVisitor getInternalVisitor(MetaClass currentClass) {
@@ -105,7 +87,7 @@ public class ClassStructureVisitor {
           return null;
         }
         var method = getMethod(name, descriptor);
-        return new MethodStructureVisitor(ClassStructureVisitor.this, currentClass, method);
+        return new MethodStructureVisitor(getNextVisitor(), currentClass, method);
       }
 
       private Method getMethod(String name, String descriptor) {
@@ -119,6 +101,19 @@ public class ClassStructureVisitor {
         currentClass.addMethod(method);
         return method;
       }
+
+      private BiFunction<String, String, Optional<MetaClass>> getNextVisitor() {
+        return (current, next) -> {
+          if (!classPathFilter.test(next)) {
+            return Optional.empty();
+          }
+          var clazz = classNameToMetaClass.get(next);
+          if (clazz != null) {
+            return Optional.of(clazz);
+          }
+          return Optional.ofNullable(ClassStructureVisitor.this.visit(current, next));
+        };
+      }
     };
   }
 
@@ -127,7 +122,7 @@ public class ClassStructureVisitor {
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
     Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
-    var result = new ClassStructureVisitor(2, allowedClassPaths, accessFilter).visitAll(className);
+    var result = new ClassStructureVisitor(1, allowedClassPaths, accessFilter).visitAll(className);
     System.err.println(result);
   }
 }

@@ -8,6 +8,8 @@ import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -16,14 +18,17 @@ import org.objectweb.asm.Type;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
-  private final ClassStructureVisitor classVisitor;
+  private final BiFunction<String, String, Optional<MetaClass>> nextVisitor;
   private final MetaClass currentClass;
   private final Method currentMethod;
 
   public MethodStructureVisitor(
-      ClassStructureVisitor classVisitor, MetaClass currentClass, Method currentMethod) {
+      BiFunction<String, String, Optional<MetaClass>> nextVisitor,
+      MetaClass currentClass,
+      Method currentMethod) {
+
     super(Opcodes.ASM9);
-    this.classVisitor = classVisitor;
+    this.nextVisitor = nextVisitor;
     this.currentClass = currentClass;
     this.currentMethod = currentMethod;
   }
@@ -43,18 +48,9 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
-    if (!classVisitor.getClassPathFilter().test(owner)) {
+    var maybeNextClass = nextVisitor.apply(currentClass.getFullName(), owner);
+    if (maybeNextClass.isEmpty()) {
       return;
-    }
-    var clazz = classVisitor.getClassNameToMetaClass().get(owner);
-    if (clazz == null) {
-      var maybeNextClass = classVisitor.visitNext(owner);
-      if (maybeNextClass.isPresent()) {
-        clazz = maybeNextClass.get();
-      } else {
-        System.err.println("Couldn't find class: " + owner);
-        return;
-      }
     }
     var type = Type.getMethodType(descriptor);
     var args =
@@ -62,7 +58,7 @@ public class MethodStructureVisitor extends MethodVisitor {
             .map(argType -> new Argument(argType, "stub"))
             .collect(toList());
     var methodName = isConstructor(name) ? getClassName(owner) : name;
-    var maybeMethod = clazz.findMethod(type.getReturnType(), methodName, args);
+    var maybeMethod = maybeNextClass.get().findMethod(type.getReturnType(), methodName, args);
 
     maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
 
