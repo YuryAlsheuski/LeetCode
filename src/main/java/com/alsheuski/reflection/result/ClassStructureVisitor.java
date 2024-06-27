@@ -49,16 +49,16 @@ public class ClassStructureVisitor {
     this.accessFilter = accessFilter;
     this.deep = deep;
     currentLevelClasses = new HashSet<>();
-    nextLevelQueue= new ClassLoadingQueue(classPathFilter);
+    nextLevelQueue = new ClassLoadingQueue(classPathFilter);
   }
 
   public Map<String, MetaClass> visitAll(String rootClass) {
     currentLevelClasses.add(rootClass);
-    visitNext(rootClass);
+    visit(rootClass);
     return classNameToMetaClass;
   }
 
-  private MetaClass visitNext(String next) {
+  private MetaClass visit(String next) {
     try {
       currentLevelClasses.remove(next);
       var targetClass = new MetaClass(next);
@@ -77,31 +77,35 @@ public class ClassStructureVisitor {
         if (deep <= 0 || nextLevelQueue.isEmpty()) {
           return targetClass;
         }
-        currentLevelClasses.addAll(nextLevelQueue.getClasses());
-
-        var entrySet = nextLevelQueue.getEntries();
-        nextLevelQueue = new ClassLoadingQueue(classPathFilter);
-
-        for (var entry : entrySet) {
-          var nextClassName = entry.getKey();
-          var nextClass =
-              classNameToMetaClass.containsKey(nextClassName)
-                  ? classNameToMetaClass.get(nextClassName)
-                  : visitNext(nextClassName);
-
-          if (nextClass == null) {
-            continue;
-          }
-
-          var nexLoaders = entry.getValue();
-          nexLoaders.forEach(nextLoader -> nextLoader.accept(nextClass));
-        }
+        visitNextLevel();
       }
       return targetClass;
     } catch (IOException ex) {
       System.err.println(ex.getMessage());
     }
     return null;
+  }
+
+  private void visitNextLevel() {
+    currentLevelClasses.addAll(nextLevelQueue.getClasses());
+
+    var entrySet = nextLevelQueue.getEntries();
+    nextLevelQueue = new ClassLoadingQueue(classPathFilter);
+
+    for (var entry : entrySet) {
+      var nextClassName = entry.getKey();
+      var nextClass =
+          classNameToMetaClass.containsKey(nextClassName)
+              ? classNameToMetaClass.get(nextClassName)
+              : visit(nextClassName);
+
+      if (nextClass == null) {
+        continue;
+      }
+
+      var nexLoaders = entry.getValue();
+      nexLoaders.forEach(nextLoader -> nextLoader.accept(nextClass));
+    }
   }
 
   private ClassVisitor getInternalVisitor(MetaClass targetClass) {
@@ -142,7 +146,7 @@ public class ClassStructureVisitor {
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
     Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
-    var result = new ClassStructureVisitor(2, allowedClassPaths, accessFilter).visitAll(className);
+    var result = new ClassStructureVisitor(3, allowedClassPaths, accessFilter).visitAll(className);
     System.err.println(result);
   }
 }
