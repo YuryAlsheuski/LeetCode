@@ -4,7 +4,6 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.getClassPath;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
 import com.alsheuski.reflection.result.model.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
@@ -139,14 +138,5 @@ public class ClassStructureVisitor {
         return method;
       }
     };
-  }
-
-  public static void main(String[] args) {
-    var className = "com/alsheuski/reflection/Common";
-    Predicate<String> allowedClassPaths =
-        path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
-    Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
-    var result = new ClassStructureVisitor(3, allowedClassPaths, accessFilter).visitAll(className);
-    System.err.println(result);
   }
 }
