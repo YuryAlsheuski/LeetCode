@@ -45,7 +45,7 @@ public class Method {
     return calledFrom.contains(className);
   }
 
-  public boolean getIsConstructor() {
+  public boolean isConstructor() {
     return isConstructor;
   }
 

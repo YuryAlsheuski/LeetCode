@@ -34,7 +34,7 @@ public class Common {
 
   public void printClassBName() {
     new ClassC().getCClassLabel();
-    System.out.println(childB.getName(666));
+    System.out.println(childB.getName(666,null));
   }
 
   public void commonInsider(CommonInsider insider) {

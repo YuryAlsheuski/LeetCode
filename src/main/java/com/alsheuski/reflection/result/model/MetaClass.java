@@ -1,6 +1,7 @@
 package com.alsheuski.reflection.result.model;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +49,10 @@ public class MetaClass {
                     && method.getName().equals(methodName)
                     && method.getArgs().equals(args))
         .findFirst();
+  }
+  
+  public List<Method> getCalledWith(String className){
+    return methods.stream().filter(method->method.isCalledFrom(className)).collect(toList());
   }
 
   @Override

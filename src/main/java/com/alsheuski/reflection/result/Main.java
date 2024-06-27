@@ -1,8 +1,12 @@
 package com.alsheuski.reflection.result;
 
-import java.util.function.Predicate;
 
+
+import static com.alsheuski.reflection.result.util.LoaderUtil.printLinkedWith;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+
+import java.util.ArrayList;
+import java.util.function.Predicate;
 
 public class Main {
   public static void main(String[] args) {
@@ -12,7 +16,10 @@ public class Main {
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
     Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
     var result = new ClassStructureVisitor(3, allowedClassPaths, accessFilter).visitAll(className);
-    System.err.println(result);
+
+    System.err.println(printLinkedWith(className,  new ArrayList<>(result.values())));
 
   }
 }
+
+//todo - currently not supported cases when some method get some class parameters, not executes any their methods - just throw it to other methods.

@@ -20,7 +20,7 @@ public class ClassB {
     name = "";
   }
 
-  public String getName(int test) {
+  public String getName(int test, ClassC cLink) {
     return test + new ClassC().getCClassLabel();
   }
 
