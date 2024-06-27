@@ -10,10 +10,6 @@ import java.util.Set;
 public class LoaderUtil {
   private LoaderUtil() {}
 
-  public static String getClassPath(String className) {
-    return String.format("target/classes/%s.class", className);
-  }
-
   public static boolean isConstructor(String methodName) {
     return "<init>".equals(methodName);
   }

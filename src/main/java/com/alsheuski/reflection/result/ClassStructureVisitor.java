@@ -1,6 +1,5 @@
 package com.alsheuski.reflection.result;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.getClassPath;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
@@ -29,24 +28,19 @@ public class ClassStructureVisitor {
   private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final Set<String> currentLevelClasses;
+  private final String root;
   private int deep;
   private ClassLoadingQueue nextLevelQueue;
 
   public ClassStructureVisitor(
-      int deep, Predicate<String> classPathFilter, Predicate<Integer> accessFilter) {
-    this(deep, new HashMap<>(), classPathFilter, accessFilter);
-  }
+      String root, Predicate<String> classPathFilter, Predicate<Integer> accessFilter, int deep) {
 
-  ClassStructureVisitor(
-      int deep,
-      Map<String, MetaClass> classNameToMetaClass,
-      Predicate<String> classPathFilter,
-      Predicate<Integer> accessFilter) {
-
-    this.classNameToMetaClass = classNameToMetaClass;
+    this.root = root;
     this.classPathFilter = classPathFilter;
     this.accessFilter = accessFilter;
     this.deep = deep;
+
+    classNameToMetaClass = new HashMap<>();
     currentLevelClasses = new HashSet<>();
     nextLevelQueue = new ClassLoadingQueue(classPathFilter);
   }
@@ -62,7 +56,7 @@ public class ClassStructureVisitor {
       currentLevelClasses.remove(next);
       var targetClass = new MetaClass(next);
       var className = targetClass.getFullName();
-      var classPath = getClassPath(className);
+      var classPath = root + className + ".class";
       var classBytes = Files.readAllBytes(Paths.get(classPath));
       var classReader = new ClassReader(classBytes);
 
@@ -80,9 +74,8 @@ public class ClassStructureVisitor {
       }
       return targetClass;
     } catch (IOException ex) {
-      System.err.println(ex.getMessage());
+      throw new RuntimeException("Build project or correct root path!",ex);
     }
-    return null;
   }
 
   private void visitNextLevel() {
