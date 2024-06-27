@@ -2,6 +2,7 @@ package com.alsheuski.reflection.result;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.getClassPath;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
+import static java.util.stream.Collectors.toMap;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
@@ -12,9 +13,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -28,7 +31,10 @@ public class ClassStructureVisitor {
   private final Predicate<String> classPathFilter;
   private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
-  private final int deep;
+  private final Set<String> currentLevelClasses;
+  private int deep;
+
+  Map<String, List<Consumer<MetaClass>>> nextLevelQueue = new HashMap<>();
 
   public ClassStructureVisitor(
       int deep, Predicate<String> classPathFilter, Predicate<Integer> accessFilter) {
@@ -45,15 +51,18 @@ public class ClassStructureVisitor {
     this.classPathFilter = classPathFilter;
     this.accessFilter = accessFilter;
     this.deep = deep;
+    currentLevelClasses = new HashSet<>();
   }
 
   public Map<String, MetaClass> visitAll(String rootClass) {
-    visit(rootClass, rootClass);
+    currentLevelClasses.add(rootClass);
+    visitNext(rootClass);
     return classNameToMetaClass;
   }
 
-  private MetaClass visit(String current, String next) {
+  private MetaClass visitNext(String next) {
     try {
+      currentLevelClasses.remove(next);
       var targetClass = new MetaClass(next);
       var className = targetClass.getFullName();
       var classPath = getClassPath(className);
@@ -64,6 +73,31 @@ public class ClassStructureVisitor {
         classNameToMetaClass.put(className, targetClass);
       }
       classReader.accept(getInternalVisitor(targetClass), EXPAND_FRAMES);
+
+      if (currentLevelClasses.isEmpty()) {// level completed
+        filterQueue();
+        deep = deep - 1;
+        if (deep <= 0 || nextLevelQueue.isEmpty()) {
+          return null;
+        }
+        currentLevelClasses.addAll(nextLevelQueue.keySet());
+        var nextLevelQueueCopy = new HashMap<>(nextLevelQueue);
+        nextLevelQueue.clear();
+        for (var entry : nextLevelQueueCopy.entrySet()) {
+          var nextClassName = entry.getKey();
+          var nextClass =
+              classNameToMetaClass.containsKey(nextClassName)
+                  ? classNameToMetaClass.get(nextClassName)
+                  : visitNext(nextClassName);
+
+          if (nextClass == null) {
+            continue;
+          }
+
+          var nexLoaders = entry.getValue();
+          nexLoaders.forEach(nextLoader -> nextLoader.accept(nextClass));
+        }
+      }
       return targetClass;
     } catch (IOException ex) {
       System.err.println(ex.getMessage());
@@ -71,7 +105,14 @@ public class ClassStructureVisitor {
     return null;
   }
 
-  private ClassVisitor getInternalVisitor(MetaClass currentClass) {
+  private void filterQueue() {
+    nextLevelQueue =
+        nextLevelQueue.entrySet().stream()
+            .filter(entry -> classPathFilter.test(entry.getKey()))
+            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  private ClassVisitor getInternalVisitor(MetaClass targetClass) {
     return new ClassVisitor(Opcodes.ASM9) {
 
       @Override
@@ -87,32 +128,19 @@ public class ClassStructureVisitor {
           return null;
         }
         var method = getMethod(name, descriptor);
-        return new MethodStructureVisitor(getNextVisitor(), currentClass, method);
+        return new MethodStructureVisitor(nextLevelQueue, targetClass, method);
       }
 
       private Method getMethod(String name, String descriptor) {
-        if (!classNameToMetaClass.containsKey(currentClass.getFullName())) {
+        if (!classNameToMetaClass.containsKey(targetClass.getFullName())) {
           return null;
         }
         var constructor = isConstructor(name);
-        var methodName = constructor ? currentClass.getName() : name;
+        var methodName = constructor ? targetClass.getName() : name;
         var method =
             new Method(Type.getMethodType(descriptor).getReturnType(), methodName, constructor);
-        currentClass.addMethod(method);
+        targetClass.addMethod(method);
         return method;
-      }
-
-      private BiFunction<String, String, Optional<MetaClass>> getNextVisitor() {
-        return (current, next) -> {
-          if (!classPathFilter.test(next)) {
-            return Optional.empty();
-          }
-          var clazz = classNameToMetaClass.get(next);
-          if (clazz != null) {
-            return Optional.of(clazz);
-          }
-          return Optional.ofNullable(ClassStructureVisitor.this.visit(current, next));
-        };
       }
     };
   }
@@ -122,7 +150,7 @@ public class ClassStructureVisitor {
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
     Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
-    var result = new ClassStructureVisitor(1, allowedClassPaths, accessFilter).visitAll(className);
+    var result = new ClassStructureVisitor(3, allowedClassPaths, accessFilter).visitAll(className);
     System.err.println(result);
   }
 }

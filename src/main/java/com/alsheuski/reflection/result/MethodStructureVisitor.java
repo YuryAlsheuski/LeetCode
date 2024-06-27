@@ -1,15 +1,16 @@
 package com.alsheuski.reflection.result;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static java.util.stream.Collectors.toList;
 
 import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -18,17 +19,17 @@ import org.objectweb.asm.Type;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
-  private final BiFunction<String, String, Optional<MetaClass>> nextVisitor;
+  private final Map<String, List<Consumer<MetaClass>>> nextLevelQueue;
   private final MetaClass currentClass;
   private final Method currentMethod;
 
   public MethodStructureVisitor(
-      BiFunction<String, String, Optional<MetaClass>> nextVisitor,
+      Map<String, List<Consumer<MetaClass>>> nextLevelQueue,
       MetaClass currentClass,
       Method currentMethod) {
 
     super(Opcodes.ASM9);
-    this.nextVisitor = nextVisitor;
+    this.nextLevelQueue = nextLevelQueue;
     this.currentClass = currentClass;
     this.currentMethod = currentMethod;
   }
@@ -48,22 +49,23 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
-    var maybeNextClass = nextVisitor.apply(currentClass.getFullName(), owner);
-    if (maybeNextClass.isEmpty()) {
-      return;
-    }
-    var type = Type.getMethodType(descriptor);
-    var args =
-        Arrays.stream(type.getArgumentTypes())
-            .map(argType -> new Argument(argType, "stub"))
-            .collect(toList());
-    var methodName = isConstructor(name) ? getClassName(owner) : name;
-    var maybeMethod = maybeNextClass.get().findMethod(type.getReturnType(), methodName, args);
+    var queue = nextLevelQueue.getOrDefault(owner, new ArrayList<>());
+    queue.add(
+        nextClazz -> {
+          var type = Type.getMethodType(descriptor);
+          var args =
+              Arrays.stream(type.getArgumentTypes())
+                  .map(argType -> new Argument(argType, "stub"))
+                  .collect(toList());
+          var methodName = isConstructor(name) ? nextClazz.getName() : name;
+          var maybeMethod = nextClazz.findMethod(type.getReturnType(), methodName, args);
 
-    maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
+          maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
 
-    // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
-    super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+          // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
+          // super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        });
+    nextLevelQueue.put(owner,queue);
   }
 
   @Override
