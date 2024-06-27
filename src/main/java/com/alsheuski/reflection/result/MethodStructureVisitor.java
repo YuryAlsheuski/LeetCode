@@ -4,13 +4,10 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static java.util.stream.Collectors.toList;
 
 import com.alsheuski.reflection.result.model.Argument;
+import com.alsheuski.reflection.result.model.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -19,14 +16,12 @@ import org.objectweb.asm.Type;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
-  private final Map<String, List<Consumer<MetaClass>>> nextLevelQueue;
+  private final ClassLoadingQueue nextLevelQueue;
   private final MetaClass currentClass;
   private final Method currentMethod;
 
   public MethodStructureVisitor(
-      Map<String, List<Consumer<MetaClass>>> nextLevelQueue,
-      MetaClass currentClass,
-      Method currentMethod) {
+      ClassLoadingQueue nextLevelQueue, MetaClass currentClass, Method currentMethod) {
 
     super(Opcodes.ASM9);
     this.nextLevelQueue = nextLevelQueue;
@@ -49,8 +44,8 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
-    var queue = nextLevelQueue.getOrDefault(owner, new ArrayList<>());
-    queue.add(
+    nextLevelQueue.add(
+        owner,
         nextClazz -> {
           var type = Type.getMethodType(descriptor);
           var args =
@@ -65,7 +60,6 @@ public class MethodStructureVisitor extends MethodVisitor {
           // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
           // super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         });
-    nextLevelQueue.put(owner,queue);
   }
 
   @Override
