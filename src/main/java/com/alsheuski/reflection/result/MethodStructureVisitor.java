@@ -49,9 +49,8 @@ public class MethodStructureVisitor extends MethodVisitor {
                 handle.getOwner(),
                 handle.getName(),
                 handle.getDesc(),
-                handle
-                    .isInterface())); // todo need to check if int handle.getTag()==int opcode for
-                                      // next method
+                handle.isInterface())); // todo need to check if int handle.getTag()==int opcode for
+    // next method
   }
 
   @Override
@@ -79,8 +78,15 @@ public class MethodStructureVisitor extends MethodVisitor {
     if (currentMethod == null || name.equals("this")) {
       return;
     }
-    var meta = signature == null ? descriptor : signature;
-    var arg = new Argument(Type.getType(meta), name);
+    var arg = new Argument(getType(descriptor, signature), name);
     currentMethod.addArgument(arg);
+  }
+
+  private Type getType(String descriptor, String signature) {
+    try {
+      return Type.getType(signature);
+    } catch (Exception exception) {
+      return Type.getType(descriptor);
+    }
   }
 }

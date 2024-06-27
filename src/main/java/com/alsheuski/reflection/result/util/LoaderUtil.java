@@ -17,12 +17,16 @@ public class LoaderUtil {
   public static String getClassName(String classFullName) {
     var delimeter1 = "/";
     var delimeter2 = ".";
+    var delimeter3= "\\";
     var resultDelimeter = "";
     if (classFullName.contains(delimeter1)) {
       resultDelimeter = delimeter1;
     } else if (classFullName.contains(delimeter2)) {
       resultDelimeter = "\\" + delimeter2;
-    } else {
+    }else if (classFullName.contains(delimeter3)) {
+      resultDelimeter = "\\\\";
+    }
+    else {
       return classFullName;
     }
     var parts = classFullName.split(resultDelimeter);
