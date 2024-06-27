@@ -78,7 +78,7 @@ public class ClassStructureVisitor {
         filterQueue();
         deep = deep - 1;
         if (deep <= 0 || nextLevelQueue.isEmpty()) {
-          return null;
+          return targetClass;
         }
         currentLevelClasses.addAll(nextLevelQueue.keySet());
         var nextLevelQueueCopy = new HashMap<>(nextLevelQueue);
