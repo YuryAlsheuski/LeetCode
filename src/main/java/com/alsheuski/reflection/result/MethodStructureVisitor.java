@@ -36,8 +36,22 @@ public class MethodStructureVisitor extends MethodVisitor {
       Handle bootstrapMethodHandle,
       Object... bootstrapMethodArguments) {
 
-    System.err.println();
-    super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethodHandle, bootstrapMethodArguments);
+    var maybeHandle =
+        Arrays.stream(bootstrapMethodArguments)
+            .filter(args -> args instanceof Handle)
+            .map(handle -> (Handle) handle)
+            .findFirst();
+
+    maybeHandle.ifPresent(
+        handle ->
+            visitMethodInsn(
+                handle.getTag(),
+                handle.getOwner(),
+                handle.getName(),
+                handle.getDesc(),
+                handle
+                    .isInterface())); // todo need to check if int handle.getTag()==int opcode for
+                                      // next method
   }
 
   @Override
@@ -56,16 +70,13 @@ public class MethodStructureVisitor extends MethodVisitor {
           var maybeMethod = nextClazz.findMethod(type.getReturnType(), methodName, args);
 
           maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
-
-          // Type.getMethodType(descriptor).getArgumentTypes()[0].getClassName();
-          // super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         });
   }
 
   @Override
   public void visitLocalVariable(
       String name, String descriptor, String signature, Label start, Label end, int index) {
-    if (currentMethod == null || name.equals("this")) { // todo think about constructors
+    if (currentMethod == null || name.equals("this")) {
       return;
     }
     var meta = signature == null ? descriptor : signature;

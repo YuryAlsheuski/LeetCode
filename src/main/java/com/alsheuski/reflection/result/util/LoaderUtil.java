@@ -58,7 +58,7 @@ public class LoaderUtil {
                 : " " + getClassName(linkedMethod.getReturnType().getClassName());
         sb.append(
             String.format(
-                "public%s %s (%s);",
+                "  public%s %s(%s);",
                 returnTypeStr,
                 linkedMethod.getName(),
                 argsStr)); // todo if needs add real access descriptor e.g.

@@ -1,6 +1,9 @@
 package com.alsheuski.reflection;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class Common {
   private ClassB childB;
 
@@ -20,9 +23,9 @@ public class Common {
     childB = new ClassB("TEST_NAME", "protected constr");
   }*/
 
-  /*public String getALabel(List<ClassA> aas, List<String> second) {
+  public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
-  }*/
+  }
 
   protected void testProtected() {
 

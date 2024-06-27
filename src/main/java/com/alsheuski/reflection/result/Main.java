@@ -21,5 +21,3 @@ public class Main {
 
   }
 }
-
-//todo - currently not supported cases when some method get some class parameters, not executes any their methods - just throw it to other methods.
