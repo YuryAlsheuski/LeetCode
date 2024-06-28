@@ -1,8 +1,9 @@
 package com.alsheuski.reflection.result;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.printLinkedWith;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
+import com.alsheuski.reflection.result.config.ClassVisitorConfig;
+import com.alsheuski.reflection.result.config.ConfigManager;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
@@ -13,9 +14,12 @@ public class Main {
     var className = "com/alsheuski/reflection/Common";
     Predicate<String> allowedClassPaths =
         path -> path.startsWith("com/alsheuski") && !path.startsWith(className);
-    Predicate<Integer> accessFilter = accessCode -> accessCode != ACC_PRIVATE;
+
+    var configManager = new ConfigManager();
+    configManager.addConfig(new ClassVisitorConfig(className, i -> true));
+
     var result =
-        new ClassStructureVisitor(root, allowedClassPaths, accessFilter, 3).visitAll(className);
+        new ClassStructureVisitor(root, configManager, allowedClassPaths, 2).visitAll(className);
 
     System.err.println(printLinkedWith(className, new ArrayList<>(result.values())));
   }

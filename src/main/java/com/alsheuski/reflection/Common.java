@@ -1,6 +1,5 @@
 package com.alsheuski.reflection;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,17 +26,15 @@ public class Common {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
-  protected void testProtected() {
-
-  }
+  protected void testProtected() {}
 
   private void testPrivate() {
-
+    new PrivateCallClass();
   }
 
   public void printClassBName() {
     new ClassC().getCClassLabel();
-    System.out.println(childB.getName(666,null));
+    System.out.println(childB.getName(666, null));
   }
 
   public void commonInsider(CommonInsider insider) {

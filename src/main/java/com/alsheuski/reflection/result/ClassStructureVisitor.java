@@ -4,6 +4,7 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 
+import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.model.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
@@ -25,19 +26,19 @@ import org.objectweb.asm.Type;
 public class ClassStructureVisitor {
 
   private final Predicate<String> classPathFilter;
-  private final Predicate<Integer> accessFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final Set<String> currentLevelClasses;
+  private final ConfigManager configManager;
   private final String root;
   private int deep;
   private ClassLoadingQueue nextLevelQueue;
 
   public ClassStructureVisitor(
-      String root, Predicate<String> classPathFilter, Predicate<Integer> accessFilter, int deep) {
+      String root, ConfigManager configManager, Predicate<String> classPathFilter, int deep) {
 
     this.root = root;
+    this.configManager = configManager;
     this.classPathFilter = classPathFilter;
-    this.accessFilter = accessFilter;
     this.deep = deep;
 
     classNameToMetaClass = new HashMap<>();
@@ -74,7 +75,7 @@ public class ClassStructureVisitor {
       }
       return targetClass;
     } catch (IOException ex) {
-      throw new RuntimeException("Build project or correct root path!",ex);
+      throw new RuntimeException("Build project or correct root path!", ex);
     }
   }
 
@@ -112,7 +113,7 @@ public class ClassStructureVisitor {
       public MethodVisitor visitMethod(
           int access, String name, String descriptor, String signature, String[] exceptions) {
 
-        if (!accessFilter.test(access)) {
+        if (!configManager.getAccessFilter(targetClass.getFullName()).test(access)) {
           return null;
         }
         var method = getMethod(name, descriptor);
