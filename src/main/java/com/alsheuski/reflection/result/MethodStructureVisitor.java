@@ -1,7 +1,7 @@
 package com.alsheuski.reflection.result;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.getType;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
-import static java.util.stream.Collectors.toList;
 
 import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.ClassLoadingQueue;
@@ -12,7 +12,6 @@ import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 public class MethodStructureVisitor extends MethodVisitor {
 
@@ -60,13 +59,8 @@ public class MethodStructureVisitor extends MethodVisitor {
     nextLevelQueue.add(
         owner,
         nextClazz -> {
-          var type = Type.getMethodType(descriptor);
-          var args =
-              Arrays.stream(type.getArgumentTypes())
-                  .map(argType -> new Argument(argType, "stub"))
-                  .collect(toList());
           var methodName = isConstructor(name) ? nextClazz.getName() : name;
-          var maybeMethod = nextClazz.findMethod(type.getReturnType(), methodName, args);
+          var maybeMethod = nextClazz.findMethod(descriptor, methodName);
 
           maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
         });
@@ -80,13 +74,5 @@ public class MethodStructureVisitor extends MethodVisitor {
     }
     var arg = new Argument(getType(descriptor, signature), name);
     currentMethod.addArgument(arg);
-  }
-
-  private Type getType(String descriptor, String signature) {
-    try {
-      return Type.getType(signature);
-    } catch (Exception exception) {
-      return Type.getType(descriptor);
-    }
   }
 }

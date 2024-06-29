@@ -1,5 +1,8 @@
 package com.alsheuski.reflection;
 
+
+import java.util.List;
+
 public class ClassB {
 
   private final String name;
@@ -20,8 +23,8 @@ public class ClassB {
     name = "";
   }
 
-  public String getName(int test, ClassC cLink) {
-    return test + new ClassC().getCClassLabel();
+  public List<String> getName(int test, List<ClassC> cLink) {
+    return  List.of(test + new ClassC().getCClassLabel());
   }
 
   private String donotprint() {

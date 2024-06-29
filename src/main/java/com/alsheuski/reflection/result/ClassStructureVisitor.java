@@ -1,5 +1,6 @@
 package com.alsheuski.reflection.result;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.getType;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
@@ -21,7 +22,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 public class ClassStructureVisitor {
 
@@ -116,19 +116,20 @@ public class ClassStructureVisitor {
         if (!configManager.getAccessFilter(targetClass.getFullName()).test(access)) {
           return null;
         }
-        var method = getMethod(name, descriptor);
+        var method = getMethod(name, descriptor, signature);
         return new MethodStructureVisitor(nextLevelQueue, targetClass, method);
       }
 
-      private Method getMethod(String name, String descriptor) {
+      private Method getMethod(String name, String descriptor, String signature) {
         if (!classNameToMetaClass.containsKey(targetClass.getFullName())) {
           return null;
         }
         var constructor = isConstructor(name);
         var methodName = constructor ? targetClass.getName() : name;
-        var method =
-            new Method(Type.getMethodType(descriptor).getReturnType(), methodName, constructor);
+        var type = getType(descriptor, signature).getReturnType();
+        var method = new Method(descriptor, type, methodName, constructor);
         targetClass.addMethod(method);
+
         return method;
       }
     };

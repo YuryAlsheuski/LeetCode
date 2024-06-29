@@ -4,8 +4,10 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import com.alsheuski.reflection.result.model.MetaClass;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.objectweb.asm.Type;
 
 public class LoaderUtil {
   private LoaderUtil() {}
@@ -15,22 +17,52 @@ public class LoaderUtil {
   }
 
   public static String getClassName(String classFullName) {
-    var delimeter1 = "/";
-    var delimeter2 = ".";
-    var delimeter3= "\\";
-    var resultDelimeter = "";
-    if (classFullName.contains(delimeter1)) {
-      resultDelimeter = delimeter1;
-    } else if (classFullName.contains(delimeter2)) {
-      resultDelimeter = "\\" + delimeter2;
-    }else if (classFullName.contains(delimeter3)) {
-      resultDelimeter = "\\\\";
+    var raw = classFullName.replace(";", "");
+    var isGenericType = raw.contains("<") && raw.contains(">");
+    var result = new ArrayList<String>();
+    var parts = new ArrayList<String>();
+    if (isGenericType) {
+      var outsideClass = raw.substring(0, raw.indexOf("<"));
+      parts.add(outsideClass);
+      parts.add("<");
+      var genericClass = raw.substring(raw.indexOf("<") + 1, raw.indexOf(">"));
+      parts.add(genericClass);
+      parts.add(">");
+    } else {
+      parts.add(raw);
     }
-    else {
-      return classFullName;
+
+    for (var part : parts) {
+      if (part.equals("<") || part.equals(">")) {
+        result.add(part);
+        continue;
+      }
+      var delimeter1 = "/";
+      var delimeter2 = ".";
+      var delimeter3 = "\\";
+      var resultDelimeter = "";
+      if (part.contains(delimeter1)) {
+        resultDelimeter = delimeter1;
+      } else if (part.contains(delimeter2)) {
+        resultDelimeter = "\\" + delimeter2;
+      } else if (part.contains(delimeter3)) {
+        resultDelimeter = "\\\\";
+      } else {
+        result.add(part);
+        continue;
+      }
+      var nameParts = part.split(resultDelimeter);
+      result.add(nameParts[nameParts.length - 1]);
     }
-    var parts = classFullName.split(resultDelimeter);
-    return parts[parts.length - 1];
+    return String.join("", result);
+  }
+
+  public static Type getType(String descriptor, String signature) {
+    try {
+      return Type.getType(signature);
+    } catch (Exception exception) {
+      return Type.getType(descriptor);
+    }
   }
 
   public static Set<MetaClass> getLinkedWith(String classFullName, List<MetaClass> classes) {

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import org.objectweb.asm.Type;
 
 public class MetaClass {
 
@@ -41,18 +40,16 @@ public class MetaClass {
     methods.add(method);
   }
 
-  public Optional<Method> findMethod(Type returnType, String methodName, List<Argument> args) {
+  public Optional<Method> findMethod(String descriptor, String methodName) {
     return methods.stream()
         .filter(
             method ->
-                method.getReturnType().equals(returnType)
-                    && method.getName().equals(methodName)
-                    && method.getArgs().equals(args))
+                method.getDescriptor().equals(descriptor) && method.getName().equals(methodName))
         .findFirst();
   }
-  
-  public List<Method> getCalledWith(String className){
-    return methods.stream().filter(method->method.isCalledFrom(className)).collect(toList());
+
+  public List<Method> getCalledWith(String className) {
+    return methods.stream().filter(method -> method.isCalledFrom(className)).collect(toList());
   }
 
   @Override

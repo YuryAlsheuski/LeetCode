@@ -7,13 +7,15 @@ import org.objectweb.asm.Type;
 
 public class Method {
 
-  private final List<Argument> args;
   private final Type returnType;
+  private final String descriptor;
+  private final List<Argument> args;
   private final String name;
   private final boolean isConstructor;
   private final List<String> calledFrom;
 
-  public Method(Type returnType, String name, boolean isConstructor) {
+  public Method(String descriptor, Type returnType, String name, boolean isConstructor) {
+    this.descriptor = descriptor;
     this.returnType = returnType;
     this.name = name;
     this.isConstructor = isConstructor;
@@ -49,19 +51,22 @@ public class Method {
     return isConstructor;
   }
 
+  public String getDescriptor() {
+    return descriptor;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Method method = (Method) o;
     return isConstructor == method.isConstructor
-        && Objects.equals(args, method.args)
-        && Objects.equals(returnType, method.returnType)
+        && Objects.equals(descriptor, method.descriptor)
         && Objects.equals(name, method.name);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(args, returnType, name, isConstructor);
+    return Objects.hash(descriptor, name, isConstructor);
   }
 }
