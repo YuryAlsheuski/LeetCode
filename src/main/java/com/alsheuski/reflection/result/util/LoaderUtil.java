@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toSet;
 
 import com.alsheuski.reflection.result.model.MetaClass;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.objectweb.asm.Type;
@@ -17,19 +18,21 @@ public class LoaderUtil {
   }
 
   public static String getClassName(String classFullName) {
-    var raw = classFullName.replace(";", "");
-    var isGenericType = raw.contains("<") && raw.contains(">");
+    var isGenericType = classFullName.contains("<") && classFullName.contains(">");
     var result = new ArrayList<String>();
     var parts = new ArrayList<String>();
     if (isGenericType) {
-      var outsideClass = raw.substring(0, raw.indexOf("<"));
+      var outsideClass = classFullName.substring(0, classFullName.indexOf("<"));
       parts.add(outsideClass);
       parts.add("<");
-      var genericClass = raw.substring(raw.indexOf("<") + 1, raw.indexOf(">"));
-      parts.add(genericClass);
+      var genericClasses =
+          classFullName.substring(classFullName.indexOf("<") + 1, classFullName.indexOf(">"));
+      var genericClassNames = genericClasses.split(";");
+      parts.add(
+          Arrays.stream(genericClassNames).map(LoaderUtil::getClassName).collect(joining(",")));
       parts.add(">");
     } else {
-      parts.add(raw);
+      parts.add(classFullName);
     }
 
     for (var part : parts) {

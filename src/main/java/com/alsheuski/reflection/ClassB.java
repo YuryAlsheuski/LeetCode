@@ -2,6 +2,7 @@ package com.alsheuski.reflection;
 
 
 import java.util.List;
+import java.util.Map;
 
 public class ClassB {
 
@@ -23,7 +24,7 @@ public class ClassB {
     name = "";
   }
 
-  public List<String> getName(int test, List<ClassC> cLink) {
+  public List<String> getName(int test, Map<ClassC,ClassA> cLink) {
     return  List.of(test + new ClassC().getCClassLabel());
   }
 
