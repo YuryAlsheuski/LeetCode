@@ -3,14 +3,15 @@ package com.alsheuski.reflection.result.model;
 import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class MetaClass {
 
-  private final List<Method> methods;
+  private final Set<Method> methods;
   private final String name;
   private final String fullName;
 
@@ -19,16 +20,16 @@ public class MetaClass {
   }
 
   public MetaClass(String fullName) {
-    this(fullName, new ArrayList<>());
+    this(fullName, new HashSet<>());
   }
 
-  public MetaClass(String fullName, List<Method> methods) {
+  public MetaClass(String fullName, Set<Method> methods) {
     this.fullName = fullName;
     this.name = getClassName(fullName);
     this.methods = methods;
   }
 
-  public List<Method> getMethods() {
+  public Set<Method> getMethods() {
     return methods;
   }
 
@@ -40,7 +41,7 @@ public class MetaClass {
     methods.add(method);
   }
 
-  public void addMethods(List<Method> methods) {
+  public void addMethods(Set<Method> methods) {
     this.methods.addAll(methods);
   }
 
