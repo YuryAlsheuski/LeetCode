@@ -39,14 +39,11 @@ public class LoaderUtil {
       }
       var delimeter1 = "/";
       var delimeter2 = ".";
-      var delimeter3 = "\\";
       var resultDelimeter = "";
       if (part.contains(delimeter1)) {
         resultDelimeter = delimeter1;
       } else if (part.contains(delimeter2)) {
         resultDelimeter = "\\" + delimeter2;
-      } else if (part.contains(delimeter3)) {
-        resultDelimeter = "\\\\";
       } else {
         result.add(part);
         continue;
