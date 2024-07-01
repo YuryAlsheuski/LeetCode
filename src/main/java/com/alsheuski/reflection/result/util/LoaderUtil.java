@@ -18,6 +18,9 @@ public class LoaderUtil {
   }
 
   public static String getClassName(String classFullName) {
+    if ("*".equals(classFullName)) {
+      return "?";
+    }
     var isGenericType = classFullName.contains("<") && classFullName.contains(">");
     var result = new ArrayList<String>();
     var parts = new ArrayList<String>();

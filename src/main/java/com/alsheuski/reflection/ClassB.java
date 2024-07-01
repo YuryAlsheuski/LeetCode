@@ -1,6 +1,5 @@
 package com.alsheuski.reflection;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +23,8 @@ public class ClassB {
     name = "";
   }
 
-  public List<String> getName(int test, Map<ClassC,ClassA> cLink) {
-    return  List.of(test + new ClassC().getCClassLabel());
+  public List<String> getName(int test, Map<ClassC, ClassA> cLink, Map<ClassC, ?> llInk) {
+    return List.of(test + new ClassC().getCClassLabel());
   }
 
   private String donotprint() {
