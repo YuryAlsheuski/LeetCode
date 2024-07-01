@@ -73,7 +73,8 @@ public class MethodStructureVisitor extends MethodVisitor {
   @Override
   public void visitLocalVariable(
       String name, String descriptor, String signature, Label start, Label end, int index) {
-    if (!context.addToResults() || name.equals("this")) {
+
+    if (name.equals("this")) {
       return;
     }
     var arg = new Argument(getType(descriptor, signature), name);
