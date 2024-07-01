@@ -30,14 +30,18 @@ public class ClassStructureVisitor {
   private final Map<String, MetaClass> classNameToMetaClass;
   private final Set<String> currentLevelClasses;
   private final ConfigManager configManager;
-  private final String root;
+  private final String rootClassPath;
   private int deep;
   private ClassLoadingQueue nextLevelQueue;
+  private ClassLoadingContext rootClassLoadingContext;
 
   public ClassStructureVisitor(
-      String root, ConfigManager configManager, Predicate<String> classPathFilter, int deep) {
+      String rootClassPath,
+      ConfigManager configManager,
+      Predicate<String> classPathFilter,
+      int deep) {
 
-    this.root = root;
+    this.rootClassPath = rootClassPath;
     this.configManager = configManager;
     this.classPathFilter = classPathFilter;
     this.deep = deep;
@@ -48,6 +52,7 @@ public class ClassStructureVisitor {
   }
 
   public Map<String, MetaClass> printAllDeps(ClassLoadingContext context) {
+    rootClassLoadingContext = context;
     currentLevelClasses.add(context.getClassFullName());
     visit(context);
     return classNameToMetaClass;
@@ -58,7 +63,7 @@ public class ClassStructureVisitor {
       currentLevelClasses.remove(context.getClassFullName());
       var targetClass = context.getCurrentClass();
       var className = targetClass.getFullName();
-      var classPath = root + className + ".class";
+      var classPath = rootClassPath + className + ".class";
       var classBytes = Files.readAllBytes(Paths.get(classPath));
       var classReader = new ClassReader(classBytes);
 
@@ -91,10 +96,16 @@ public class ClassStructureVisitor {
 
     for (var entry : entrySet) {
       var nextClassName = entry.getKey();
+
+      var nextClassContext =
+          rootClassLoadingContext.getClassFullName().equals(nextClassName)
+              ? rootClassLoadingContext
+              : new ClassLoadingContext(nextClassName);
+
       var nextClass =
           classNameToMetaClass.containsKey(nextClassName)
               ? classNameToMetaClass.get(nextClassName)
-              : visit(new ClassLoadingContext(nextClassName));
+              : visit(nextClassContext);
 
       if (nextClass == null) {
         continue;
