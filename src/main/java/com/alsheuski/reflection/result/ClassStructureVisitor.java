@@ -145,7 +145,7 @@ public class ClassStructureVisitor {
         if (!configManager.getAccessFilter(context.getClassFullName()).test(access)) {
           return null;
         }
-        var method = getMethod(name, descriptor, signature);
+        var method = getMethod(access, name, descriptor, signature);
         return new MethodStructureVisitor(nextLevelQueue, context, method);
       }
 
@@ -157,12 +157,12 @@ public class ClassStructureVisitor {
         }
       }
 
-      private Method getMethod(String name, String descriptor, String signature) {
+      private Method getMethod(int access, String name, String descriptor, String signature) {
         var currentClass = context.getCurrentClass();
         var constructor = isConstructor(name);
         var methodName = constructor ? currentClass.getName() : name;
         var type = getType(descriptor, signature).getReturnType();
-        var method = new Method(descriptor, type, methodName, constructor);
+        var method = new Method(access, descriptor, type, methodName, constructor);
         currentClass.addMethod(method);
 
         return method;

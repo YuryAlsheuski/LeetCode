@@ -1,5 +1,7 @@
 package com.alsheuski.reflection.result.model;
 
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -7,6 +9,7 @@ import org.objectweb.asm.Type;
 
 public class Method {
 
+  private final int access;
   private final Type returnType;
   private final String descriptor;
   private final List<Argument> args;
@@ -14,7 +17,14 @@ public class Method {
   private final boolean isConstructor;
   private final List<String> calledFrom;
 
-  public Method(String descriptor, Type returnType, String name, boolean isConstructor) {
+  public Method(
+      int access,
+      String descriptor,
+      Type returnType,
+      String name,
+      boolean isConstructor) { // todo migrate to MethodNode
+
+    this.access = access;
     this.descriptor = descriptor;
     this.returnType = returnType;
     this.name = name;
@@ -53,6 +63,10 @@ public class Method {
 
   public String getDescriptor() {
     return descriptor;
+  }
+
+  public boolean isStatic() {
+    return access > ACC_STATIC;
   }
 
   @Override

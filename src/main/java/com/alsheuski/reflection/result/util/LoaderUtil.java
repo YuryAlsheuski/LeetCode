@@ -91,9 +91,11 @@ public class LoaderUtil {
             linkedMethod.isConstructor()
                 ? ""
                 : " " + getClassName(linkedMethod.getReturnType().getClassName());
+        var staticPrefix = linkedMethod.isStatic() ? " static" : "";
         sb.append(
             String.format(
-                "  public%s %s(%s);",
+                "  public%s%s %s(%s);",
+                staticPrefix,
                 returnTypeStr,
                 linkedMethod.getName(),
                 argsStr)); // todo if needs add real access descriptor e.g.

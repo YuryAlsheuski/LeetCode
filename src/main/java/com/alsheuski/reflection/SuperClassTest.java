@@ -7,7 +7,7 @@ public class SuperClassTest extends TopLevelSuperClass{
   public SuperClassTest(String tt){
 
   }
-  public void setSomething(Map<String,String> map) {
+  public static void setSomething(Map<String,String> map) {
 
   }
 }
