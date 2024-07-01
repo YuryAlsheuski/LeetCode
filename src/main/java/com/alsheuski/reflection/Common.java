@@ -1,28 +1,18 @@
 package com.alsheuski.reflection;
 
-import java.util.List;
-import java.util.stream.Collectors;
+
+import java.util.Map;
 
 public class Common {
   private ClassB childB;
 
   public Common() {
     this.childB = new ClassB("TEST_NAME");
+    childB.setSomething(Map.of());
+    childB.printSmth();
   }
 
-  /*public Common(int one, Long two) {
-    childB = new ClassB("TEST_NAME", "", "");
-  }
-
-  private Common(String three) {
-
-  }
-
-  protected Common(Byte testProtectedConstr) {
-    childB = new ClassB("TEST_NAME", "protected constr");
-  }*/
-
-  public String getALabel(List<ClassA> aas, List<String> second) {
+ /* public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
@@ -45,5 +35,5 @@ public class Common {
     public String getStr() {
       return "fdsfsd";
     }
-  }
+  }*/
 }

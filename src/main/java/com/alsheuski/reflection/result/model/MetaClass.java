@@ -40,6 +40,10 @@ public class MetaClass {
     methods.add(method);
   }
 
+  public void addMethods(List<Method> methods) {
+    this.methods.addAll(methods);
+  }
+
   public Optional<Method> findMethod(String descriptor, String methodName) {
     return methods.stream()
         .filter(

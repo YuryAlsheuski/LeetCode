@@ -1,4 +1,6 @@
-package com.alsheuski.reflection.result.model;
+package com.alsheuski.reflection.result.context;
+
+import com.alsheuski.reflection.result.model.MetaClass;
 
 import java.util.ArrayList;
 import java.util.HashMap;

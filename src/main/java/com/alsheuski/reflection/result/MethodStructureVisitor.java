@@ -3,9 +3,9 @@ package com.alsheuski.reflection.result;
 import static com.alsheuski.reflection.result.util.LoaderUtil.getType;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 
+import com.alsheuski.reflection.result.context.ClassLoadingContext;
+import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
-import com.alsheuski.reflection.result.model.ClassLoadingQueue;
-import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import java.util.Arrays;
 import org.objectweb.asm.Handle;
@@ -16,15 +16,15 @@ import org.objectweb.asm.Opcodes;
 public class MethodStructureVisitor extends MethodVisitor {
 
   private final ClassLoadingQueue nextLevelQueue;
-  private final MetaClass currentClass;
+  private final ClassLoadingContext context;
   private final Method currentMethod;
 
   public MethodStructureVisitor(
-      ClassLoadingQueue nextLevelQueue, MetaClass currentClass, Method currentMethod) {
+      ClassLoadingQueue nextLevelQueue, ClassLoadingContext context, Method currentMethod) {
 
     super(Opcodes.ASM9);
     this.nextLevelQueue = nextLevelQueue;
-    this.currentClass = currentClass;
+    this.context = context;
     this.currentMethod = currentMethod;
   }
 
@@ -56,20 +56,24 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
+    if (context.hasChild()) {
+      return;
+    }
+
     nextLevelQueue.add(
         owner,
         nextClazz -> {
           var methodName = isConstructor(name) ? nextClazz.getName() : name;
           var maybeMethod = nextClazz.findMethod(descriptor, methodName);
 
-          maybeMethod.ifPresent(method -> method.addCallFromClass(currentClass.getFullName()));
+          maybeMethod.ifPresent(method -> method.addCallFromClass(context.getClassFullName()));
         });
   }
 
   @Override
   public void visitLocalVariable(
       String name, String descriptor, String signature, Label start, Label end, int index) {
-    if (currentMethod == null || name.equals("this")) {
+    if (!context.addToResults() || name.equals("this")) {
       return;
     }
     var arg = new Argument(getType(descriptor, signature), name);

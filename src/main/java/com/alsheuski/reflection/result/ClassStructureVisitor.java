@@ -6,7 +6,8 @@ import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 
 import com.alsheuski.reflection.result.config.ConfigManager;
-import com.alsheuski.reflection.result.model.ClassLoadingQueue;
+import com.alsheuski.reflection.result.context.ClassLoadingContext;
+import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import java.io.IOException;
@@ -46,25 +47,28 @@ public class ClassStructureVisitor {
     nextLevelQueue = new ClassLoadingQueue(classPathFilter);
   }
 
-  public Map<String, MetaClass> visitAll(String rootClass) {
-    currentLevelClasses.add(rootClass);
-    visit(rootClass);
+  public Map<String, MetaClass> printAllDeps(ClassLoadingContext context) {
+    currentLevelClasses.add(context.getClassFullName());
+    visit(context);
     return classNameToMetaClass;
   }
 
-  private MetaClass visit(String next) {
+  private MetaClass visit(ClassLoadingContext context) {
     try {
-      currentLevelClasses.remove(next);
-      var targetClass = new MetaClass(next);
+      currentLevelClasses.remove(context.getClassFullName());
+      var targetClass = context.getCurrentClass();
       var className = targetClass.getFullName();
       var classPath = root + className + ".class";
       var classBytes = Files.readAllBytes(Paths.get(classPath));
       var classReader = new ClassReader(classBytes);
 
-      if (!classNameToMetaClass.containsKey(className) && classPathFilter.test(className)) {
+      if (context.addToResults()
+          && !classNameToMetaClass.containsKey(className)
+          && classPathFilter.test(className)) {
+
         classNameToMetaClass.put(className, targetClass);
       }
-      classReader.accept(getInternalVisitor(targetClass), EXPAND_FRAMES);
+      classReader.accept(getInternalVisitor(context), EXPAND_FRAMES);
 
       if (currentLevelClasses.isEmpty()) { // level completed
         deep = deep - 1;
@@ -90,7 +94,7 @@ public class ClassStructureVisitor {
       var nextClass =
           classNameToMetaClass.containsKey(nextClassName)
               ? classNameToMetaClass.get(nextClassName)
-              : visit(nextClassName);
+              : visit(new ClassLoadingContext(nextClassName));
 
       if (nextClass == null) {
         continue;
@@ -101,8 +105,22 @@ public class ClassStructureVisitor {
     }
   }
 
-  private ClassVisitor getInternalVisitor(MetaClass targetClass) {
+  private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
     return new ClassVisitor(Opcodes.ASM9) {
+
+      @Override
+      public void visit(
+          int version,
+          int access,
+          String name,
+          String signature,
+          String superName,
+          String[] interfaces) {
+
+        if (classPathFilter.test(superName)) {
+          ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context, true));
+        }
+      }
 
       @Override
       public ClassVisitor getDelegate() {
@@ -113,22 +131,28 @@ public class ClassStructureVisitor {
       public MethodVisitor visitMethod(
           int access, String name, String descriptor, String signature, String[] exceptions) {
 
-        if (!configManager.getAccessFilter(targetClass.getFullName()).test(access)) {
+        if (!configManager.getAccessFilter(context.getClassFullName()).test(access)) {
           return null;
         }
         var method = getMethod(name, descriptor, signature);
-        return new MethodStructureVisitor(nextLevelQueue, targetClass, method);
+        return new MethodStructureVisitor(nextLevelQueue, context, method);
+      }
+
+      @Override
+      public void visitEnd() {
+        if (context.hasChild()) {
+          var superClassMethods = context.getCurrentClass().getMethods();
+          context.getChildClassContext().getCurrentClass().addMethods(superClassMethods);
+        }
       }
 
       private Method getMethod(String name, String descriptor, String signature) {
-        if (!classNameToMetaClass.containsKey(targetClass.getFullName())) {
-          return null;
-        }
+        var currentClass = context.getCurrentClass();
         var constructor = isConstructor(name);
-        var methodName = constructor ? targetClass.getName() : name;
+        var methodName = constructor ? currentClass.getName() : name;
         var type = getType(descriptor, signature).getReturnType();
         var method = new Method(descriptor, type, methodName, constructor);
-        targetClass.addMethod(method);
+        currentClass.addMethod(method);
 
         return method;
       }
