@@ -1,21 +1,20 @@
 package com.alsheuski.reflection.result.model;
 
-import static org.objectweb.asm.Opcodes.ACC_STATIC;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 public class Method {
 
   private final int access;
-  private final Type returnType;
   private final String descriptor;
   private final List<Argument> args;
   private final String name;
   private final boolean isConstructor;
-  private final List<String> calledFrom;
+  private  Type returnType;
+  private List<String> calledFrom;
 
   public Method(
       int access,
@@ -35,6 +34,10 @@ public class Method {
 
   public List<Argument> getArgs() {
     return args;
+  }
+
+  public void setReturnType(Type returnType) {
+    this.returnType = returnType;
   }
 
   public Type getReturnType() {
@@ -66,7 +69,7 @@ public class Method {
   }
 
   public boolean isStatic() {
-    return access > ACC_STATIC;
+    return (access & Opcodes.ACC_STATIC) != 0;
   }
 
   @Override

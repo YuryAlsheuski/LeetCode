@@ -5,9 +5,9 @@ import static java.util.stream.Collectors.toSet;
 
 import com.alsheuski.reflection.result.model.MetaClass;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Type;
 
 public class LoaderUtil {
@@ -21,43 +21,75 @@ public class LoaderUtil {
     if ("*".equals(classFullName)) {
       return "?";
     }
-    var isGenericType = classFullName.contains("<") && classFullName.contains(">");
+    return parseClassName(classFullName.replace("*", "*;"));
+  }
+
+  private static String parseClassName(String classFullName) {
+    boolean isGenericType = classFullName.contains("<") && classFullName.contains(">");
     var result = new ArrayList<String>();
-    var parts = new ArrayList<String>();
+
     if (isGenericType) {
-      var outsideClass = classFullName.substring(0, classFullName.indexOf("<"));
-      parts.add(outsideClass);
-      parts.add("<");
-      var genericClasses =
-          classFullName.substring(classFullName.indexOf("<") + 1, classFullName.indexOf(">"));
-      var genericClassNames = genericClasses.split(";");
-      parts.add(
-          Arrays.stream(genericClassNames).map(LoaderUtil::getClassName).collect(joining(",")));
-      parts.add(">");
+      var startIndex = classFullName.indexOf("<");
+      var endIndex = classFullName.lastIndexOf(">");
+      var outsideClass = classFullName.substring(0, startIndex);
+      var genericClasses = classFullName.substring(startIndex + 1, endIndex);
+
+      result.add(parseSimpleClassName(outsideClass));
+      result.add("<");
+      result.add(parseGenericClasses(genericClasses));
+      result.add(">");
     } else {
-      parts.add(classFullName);
+      result.add(parseSimpleClassName(classFullName));
     }
 
-    for (var part : parts) {
-      if (part.equals("<") || part.equals(">")) {
-        result.add(part);
-        continue;
-      }
-      var delimeter1 = "/";
-      var delimeter2 = ".";
-      var resultDelimeter = "";
-      if (part.contains(delimeter1)) {
-        resultDelimeter = delimeter1;
-      } else if (part.contains(delimeter2)) {
-        resultDelimeter = "\\" + delimeter2;
-      } else {
-        result.add(part);
-        continue;
-      }
-      var nameParts = part.split(resultDelimeter);
-      result.add(nameParts[nameParts.length - 1]);
-    }
     return String.join("", result);
+  }
+
+  private static String parseGenericClasses(String genericClasses) {
+    var genericClassNames = splitGenericClasses(genericClasses); // todo upgrade class printing
+    return genericClassNames.stream()
+        .map(LoaderUtil::getClassName)
+        .collect(Collectors.joining(","));
+  }
+
+  private static List<String> splitGenericClasses(String genericClasses) {
+    var result = new ArrayList<String>();
+    var level = 0;
+    var lastSplit = 0;
+
+    for (var i = 0; i < genericClasses.length(); i++) {
+      var c = genericClasses.charAt(i);
+      if (c == '<') {
+        level++;
+        continue;
+      }
+      if (c == '>') {
+        level--;
+        continue;
+      }
+      if (c == ';' && level == 0) {
+        result.add(genericClasses.substring(lastSplit, i).trim());
+        lastSplit = i + 1;
+      }
+    }
+    return result;
+  }
+
+  private static String parseSimpleClassName(String classFullName) {
+    var delimiter1 = "/";
+    var delimiter2 = ".";
+    var resultDelimiter = "";
+
+    if (classFullName.contains(delimiter1)) {
+      resultDelimiter = delimiter1;
+    } else if (classFullName.contains(delimiter2)) {
+      resultDelimiter = "\\" + delimiter2;
+    } else {
+      return classFullName;
+    }
+
+    var nameParts = classFullName.split(resultDelimiter);
+    return nameParts[nameParts.length - 1];
   }
 
   public static Type getType(String descriptor, String signature) {

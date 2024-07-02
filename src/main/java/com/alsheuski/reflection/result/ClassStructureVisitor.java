@@ -162,7 +162,15 @@ public class ClassStructureVisitor {
         var constructor = isConstructor(name);
         var methodName = constructor ? currentClass.getName() : name;
         var type = getType(descriptor, signature).getReturnType();
-        var method = new Method(access, descriptor, type, methodName, constructor);
+        var method =
+            currentClass
+                .findMethod(descriptor, name)
+                .map(
+                    existed -> {
+                      existed.setReturnType(type);
+                      return existed;
+                    })
+                .orElse(new Method(access, descriptor, type, methodName, constructor));
         currentClass.addMethod(method);
 
         return method;

@@ -13,7 +13,7 @@ public class ConfigManager {
 
   public ConfigManager() {
     classNameToConfig = new HashMap<>();
-    defaultConfig = new ClassVisitorConfig("def", accessCode -> accessCode != ACC_PRIVATE);
+    defaultConfig = new ClassVisitorConfig("def", accessCode -> (accessCode & ACC_PRIVATE) == 0);
   }
 
   public void addConfig(ClassVisitorConfig config) {
