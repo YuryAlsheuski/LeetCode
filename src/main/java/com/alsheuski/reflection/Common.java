@@ -6,8 +6,9 @@ public class Common {
 
   public Common() {
     var object = new GenericChild();
+    object.get(null,null);
     //object.get(List.of(""));
-    object.superGeneric();
+   // object.superGeneric();
   }
 
   /*public String getALabel(List<ClassA> aas, List<String> second) {

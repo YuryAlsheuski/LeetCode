@@ -2,13 +2,18 @@ package com.alsheuski.reflection.result.util;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
+import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 
 import com.alsheuski.reflection.result.model.MetaClass;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.objectweb.asm.Type;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 
 public class LoaderUtil {
   private LoaderUtil() {}
@@ -92,11 +97,65 @@ public class LoaderUtil {
     return nameParts[nameParts.length - 1];
   }
 
-  public static Type getType(String descriptor, String signature) {
-    try {
-      return Type.getType(signature);
-    } catch (Exception exception) {
-      return Type.getType(descriptor);
+  public static List<String> parseGenericTypes(String signature) {
+    List<String> result = new ArrayList<>();
+    int len = signature.length();
+    int index = 0;
+
+    while (index < len) {
+      if (signature.charAt(index) == '<') {
+        int endIndex = findMatchingBracket(signature, index);
+        if (endIndex != -1) {
+          String genericContent = signature.substring(index + 1, endIndex);
+          extractGenericTypes(genericContent, result);
+          index = endIndex;
+        }
+      }
+      index++;
+    }
+
+    return result;
+  }
+
+  private static int findMatchingBracket(String input, int startIndex) {
+    int len = input.length();
+    int count = 0;
+
+    for (int i = startIndex; i < len; i++) {
+      if (input.charAt(i) == '<') {
+        count++;
+      } else if (input.charAt(i) == '>') {
+        count--;
+        if (count == 0) {
+          return i;
+        }
+      }
+    }
+
+    return -1; // No matching bracket found
+  }
+
+  private static void extractGenericTypes(String input, List<String> result) {
+    int len = input.length();
+    int index = 0;
+    int start = 0;
+    int nestedLevel = 0;
+
+    while (index < len) {
+      char c = input.charAt(index);
+      if (c == '<') {
+        nestedLevel++;
+      } else if (c == '>') {
+        nestedLevel--;
+      } else if (c == ';' && nestedLevel == 0) {
+        result.add(input.substring(start, index + 1));
+        start = index + 1;
+      }
+      index++;
+    }
+
+    if (start < len) {
+      result.add(input.substring(start));
     }
   }
 
@@ -137,5 +196,15 @@ public class LoaderUtil {
       sb.append("}\n");
     }
     return sb.toString();
+  }
+
+  public static void loadClass(String classPath, ClassVisitor visitor) {
+    try {
+      var classBytes = Files.readAllBytes(Paths.get(classPath));
+      var classReader = new ClassReader(classBytes);
+      classReader.accept(visitor, EXPAND_FRAMES);
+    } catch (IOException ex) {
+      throw new RuntimeException("Build project or correct root path!", ex);
+    }
   }
 }

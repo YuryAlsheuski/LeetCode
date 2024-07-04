@@ -14,10 +14,7 @@ public class MetaClass {
   private final Set<Method> methods;
   private final String name;
   private final String fullName;
-
-  public String getName() {
-    return name;
-  }
+  private String signature;
 
   public MetaClass(String fullName) {
     this(fullName, new HashSet<>());
@@ -55,6 +52,18 @@ public class MetaClass {
 
   public List<Method> getCalledWith(String className) {
     return methods.stream().filter(method -> method.isCalledFrom(className)).collect(toList());
+  }
+
+  public String getSignature() {
+    return signature;
+  }
+
+  public void setSignature(String signature) {
+    this.signature = signature;
+  }
+
+  public String getName() {
+    return name;
   }
 
   @Override

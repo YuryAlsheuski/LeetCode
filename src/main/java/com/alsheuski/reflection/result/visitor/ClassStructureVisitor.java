@@ -1,28 +1,24 @@
-package com.alsheuski.reflection.result;
+package com.alsheuski.reflection.result.visitor;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.getType;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
-import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
+import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
+import static org.objectweb.asm.Opcodes.ASM9;
 
+import com.alsheuski.reflection.result.TypeResolver;
 import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 public class ClassStructureVisitor {
 
@@ -59,33 +55,29 @@ public class ClassStructureVisitor {
   }
 
   private MetaClass visit(ClassLoadingContext context) {
-    try {
-      currentLevelClasses.remove(context.getClassFullName());
-      var targetClass = context.getCurrentClass();
-      var className = targetClass.getFullName();
-      var classPath = rootClassPath + className + ".class";
-      var classBytes = Files.readAllBytes(Paths.get(classPath));
-      var classReader = new ClassReader(classBytes);
 
-      if (context.addToResults()
-          && !classNameToMetaClass.containsKey(className)
-          && classPathFilter.test(className)) {
+    currentLevelClasses.remove(context.getClassFullName());
+    var targetClass = context.getCurrentClass();
+    var className = targetClass.getFullName();
 
-        classNameToMetaClass.put(className, targetClass);
-      }
-      classReader.accept(getInternalVisitor(context), EXPAND_FRAMES);
+    if (context.addToResults()
+        && !classNameToMetaClass.containsKey(className)
+        && classPathFilter.test(className)) {
 
-      if (currentLevelClasses.isEmpty()) { // level completed
-        deep = deep - 1;
-        if (deep <= 0 || nextLevelQueue.isEmpty()) {
-          return targetClass;
-        }
-        visitNextLevel();
-      }
-      return targetClass;
-    } catch (IOException ex) {
-      throw new RuntimeException("Build project or correct root path!", ex);
+      classNameToMetaClass.put(className, targetClass);
     }
+    var classPath = rootClassPath + className + ".class";
+
+    loadClass(classPath, getInternalVisitor(context));
+
+    if (currentLevelClasses.isEmpty()) { // level completed
+      deep = deep - 1;
+      if (deep <= 0 || nextLevelQueue.isEmpty()) {
+        return targetClass;
+      }
+      visitNextLevel();
+    }
+    return targetClass;
   }
 
   private void visitNextLevel() {
@@ -117,7 +109,9 @@ public class ClassStructureVisitor {
   }
 
   private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
-    return new ClassVisitor(Opcodes.ASM9) {
+    return new ClassVisitor(ASM9) {
+
+      private final TypeResolver typeResolver = new TypeResolver();
 
       @Override
       public void visit(
@@ -128,6 +122,7 @@ public class ClassStructureVisitor {
           String superName,
           String[] interfaces) {
 
+        context.getCurrentClass().setSignature(signature);
         if (classPathFilter.test(superName)) {
           ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context, true));
         }
@@ -146,7 +141,7 @@ public class ClassStructureVisitor {
           return null;
         }
         var method = getMethod(access, name, descriptor, signature);
-        return new MethodStructureVisitor(nextLevelQueue, context, method);
+        return new MethodStructureVisitor(typeResolver, nextLevelQueue, context, method);
       }
 
       @Override
@@ -161,7 +156,7 @@ public class ClassStructureVisitor {
         var currentClass = context.getCurrentClass();
         var constructor = isConstructor(name);
         var methodName = constructor ? currentClass.getName() : name;
-        var type = getType(descriptor, signature).getReturnType();
+        var type = typeResolver.getType(context, descriptor, signature).getReturnType();
         var method =
             currentClass
                 .findMethod(descriptor, name)

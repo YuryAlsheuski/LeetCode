@@ -5,6 +5,7 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.printLinkedWith;
 import com.alsheuski.reflection.result.config.ClassVisitorConfig;
 import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
+import com.alsheuski.reflection.result.visitor.ClassStructureVisitor;
 import java.util.ArrayList;
 import java.util.function.Predicate;
 
@@ -24,4 +25,5 @@ public class Main {
 
     System.err.println(printLinkedWith(className, new ArrayList<>(result.values())));
   }
+  //todo check array support type and as generic type too
 }

@@ -1,8 +1,8 @@
-package com.alsheuski.reflection.result;
+package com.alsheuski.reflection.result.visitor;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.getType;
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 
+import com.alsheuski.reflection.result.TypeResolver;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
@@ -18,14 +18,19 @@ public class MethodStructureVisitor extends MethodVisitor {
   private final ClassLoadingQueue nextLevelQueue;
   private final ClassLoadingContext context;
   private final Method currentMethod;
+  private final TypeResolver typeResolver;
 
   public MethodStructureVisitor(
-      ClassLoadingQueue nextLevelQueue, ClassLoadingContext context, Method currentMethod) {
+      TypeResolver typeResolver,
+      ClassLoadingQueue nextLevelQueue,
+      ClassLoadingContext context,
+      Method currentMethod) {
 
     super(Opcodes.ASM9);
     this.nextLevelQueue = nextLevelQueue;
     this.context = context;
     this.currentMethod = currentMethod;
+    this.typeResolver = typeResolver;
   }
 
   @Override
@@ -49,7 +54,6 @@ public class MethodStructureVisitor extends MethodVisitor {
                 handle.getName(),
                 handle.getDesc(),
                 handle.isInterface())); // todo need to check if int handle.getTag()==int opcode for
-    // next method
   }
 
   @Override
@@ -77,7 +81,8 @@ public class MethodStructureVisitor extends MethodVisitor {
     if (name.equals("this")) {
       return;
     }
-    var arg = new Argument(getType(descriptor, signature), name);
+    var type = typeResolver.getType(context, descriptor, signature);
+    var arg = new Argument(type, name);
     currentMethod.addArgument(arg);
   }
 }
