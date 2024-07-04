@@ -1,6 +1,8 @@
 package com.alsheuski.reflection;
 
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Common {
 
@@ -11,7 +13,7 @@ public class Common {
    // object.superGeneric();
   }
 
-  /*public String getALabel(List<ClassA> aas, List<String> second) {
+  public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
@@ -34,5 +36,5 @@ public class Common {
     public String getStr() {
       return "fdsfsd";
     }
-  }*/
+  }
 }
