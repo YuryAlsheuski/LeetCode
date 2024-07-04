@@ -124,7 +124,7 @@ public class TypeResolver {
     }
 
     private String getSignature(String name) {
-      var typeParamSignature = classGenericArgs.get(name);
+      var typeParamSignature = classGenericArgs == null ? null : classGenericArgs.get(name);
       if (typeParamSignature == null) {
         typeParamSignature = methodGenericArgs.get(name);
         if (typeParamSignature == null) {

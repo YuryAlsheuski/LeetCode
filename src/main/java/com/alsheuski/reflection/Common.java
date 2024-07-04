@@ -7,8 +7,7 @@ import java.util.stream.Collectors;
 public class Common {
 
   public Common() {
-    var object = new GenericChild();
-    object.get(null,null);
+    GenericParent.getX();
     //object.get(List.of(""));
    // object.superGeneric();
   }
