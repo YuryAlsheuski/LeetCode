@@ -18,11 +18,15 @@ public class TypeResolver {
   public Type getType(ClassLoadingContext context, String descriptor, String signature) {
     var classSignature = context.getCurrentClass().getSignature();
 
-    if (classSignature != null && context.hasChild() && formalToConcreteSignature == null) {
-      var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
-      var childClassSignatures = parseGenericTypes(childClassSignature);
-      formalToConcreteSignature =
-          new GenericArgsVisitor(childClassSignatures, classSignature).load();
+    if (classSignature != null && formalToConcreteSignature == null) {
+      if (context.hasChild()) {
+        var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
+        var childClassSignatures = parseGenericTypes(childClassSignature);
+        formalToConcreteSignature =
+            new GenericArgsVisitor(childClassSignatures, classSignature).load();
+      } else {
+        formalToConcreteSignature = parseFormalTypeParameters(classSignature);
+      }
     }
 
     if (signature == null) {

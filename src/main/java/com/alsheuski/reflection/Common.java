@@ -2,16 +2,15 @@ package com.alsheuski.reflection;
 
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class Common {
 
   public Common() {
-    GenericParent.getX();
-    //object.get(List.of(""));
-   // object.superGeneric();
+    new GenericParent<List<String>,Integer, Map<String,Double>>().get(null);
+   // GenericParent<List<String>,Integer, Map<String,Double>>.get();
   }
-
+/*
   public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
@@ -35,5 +34,5 @@ public class Common {
     public String getStr() {
       return "fdsfsd";
     }
-  }
+  }*/
 }

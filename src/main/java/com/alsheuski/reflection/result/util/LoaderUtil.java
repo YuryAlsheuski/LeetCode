@@ -55,6 +55,7 @@ public class LoaderUtil {
   private static String parseGenericClasses(String genericClasses) {
     var genericClassNames = splitGenericClasses(genericClasses); // todo upgrade class printing
     return genericClassNames.stream()
+        .filter(name -> !"".equals(name))
         .map(LoaderUtil::getClassName)
         .collect(Collectors.joining(","));
   }
@@ -239,10 +240,11 @@ public class LoaderUtil {
         }
       }
     }
-    return -1;  // No matching closing bracket found
+    return -1; // No matching closing bracket found
   }
 
-  private static void parseParameters(String paramsString, Map<String, String> formalTypeParameters) {
+  private static void parseParameters(
+      String paramsString, Map<String, String> formalTypeParameters) {
     int length = paramsString.length();
     int i = 0;
     while (i < length) {
@@ -253,7 +255,7 @@ public class LoaderUtil {
       String paramName = paramsString.substring(i, colonIndex);
       i = colonIndex + 1;
       if (paramsString.charAt(i) == ':') {
-        i++;  // Skip the second ':'
+        i++; // Skip the second ':'
       }
       int typeStart = i;
       int depth = 0;
