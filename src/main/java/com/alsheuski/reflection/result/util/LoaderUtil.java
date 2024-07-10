@@ -55,7 +55,6 @@ public class LoaderUtil {
   private static String parseGenericClasses(String genericClasses) {
     var genericClassNames = splitGenericClasses(genericClasses); // todo upgrade class printing
     return genericClassNames.stream()
-        .filter(name -> !"".equals(name))
         .map(LoaderUtil::getClassName)
         .collect(Collectors.joining(","));
   }
@@ -75,7 +74,7 @@ public class LoaderUtil {
         level--;
         continue;
       }
-      if (c == ';' && level == 0) {
+      if (c == ';' && level == 0 && lastSplit != i) {
         result.add(genericClasses.substring(lastSplit, i).trim());
         lastSplit = i + 1;
       }
