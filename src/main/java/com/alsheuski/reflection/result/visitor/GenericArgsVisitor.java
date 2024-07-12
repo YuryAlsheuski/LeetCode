@@ -26,6 +26,7 @@ public class GenericArgsVisitor {
         .accept(
             new SignatureVisitor(ASM9) {
 
+              @Override
               public void visitFormalTypeParameter(String name) {
                 if (argSignaturesIterator.hasNext()) {
                   formalToConcreteSignature.put(name, argSignaturesIterator.next());

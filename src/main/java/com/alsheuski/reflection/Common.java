@@ -1,15 +1,15 @@
 package com.alsheuski.reflection;
 
-import java.util.List;
-import java.util.Map;
 
 public class Common {
 
   public Common() {
-    var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
+   /* var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some= new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
     new GenericChild().get(null);
     new GenericChild().getX(null);
+*/
+    new GenericChild().superParentGet(null);
     // GenericParent<List<String>,Integer, Map<String,Double>>.get();
   }
   /* public String getALabel(List<ClassA> aas, List<String> second) {

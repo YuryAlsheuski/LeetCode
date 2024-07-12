@@ -122,9 +122,11 @@ public class ClassStructureVisitor {
           String superName,
           String[] interfaces) {
 
+        var hasValidParent = classPathFilter.test(superName);
+       // var resultSignature =
         context.getCurrentClass().setSignature(signature);
         typeResolver = new TypeResolver(context);
-        if (classPathFilter.test(superName)) {
+        if (hasValidParent) {
           ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context));
         }
       }
