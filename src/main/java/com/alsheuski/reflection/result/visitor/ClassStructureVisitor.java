@@ -47,7 +47,7 @@ public class ClassStructureVisitor {
     nextLevelQueue = new ClassLoadingQueue(classPathFilter);
   }
 
-  public Map<String, MetaClass> printAllDeps(ClassLoadingContext context) {
+  public Map<String, MetaClass> getAllDeps(ClassLoadingContext context) {
     rootClassLoadingContext = context;
     currentLevelClasses.add(context.getClassFullName());
     visit(context);
@@ -111,7 +111,7 @@ public class ClassStructureVisitor {
   private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
     return new ClassVisitor(ASM9) {
 
-      private final TypeResolver typeResolver = new TypeResolver();
+      private TypeResolver typeResolver;
 
       @Override
       public void visit(
@@ -123,8 +123,9 @@ public class ClassStructureVisitor {
           String[] interfaces) {
 
         context.getCurrentClass().setSignature(signature);
+        typeResolver = new TypeResolver(context);
         if (classPathFilter.test(superName)) {
-          ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context, true));
+          ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context));
         }
       }
 
@@ -156,7 +157,7 @@ public class ClassStructureVisitor {
         var currentClass = context.getCurrentClass();
         var constructor = isConstructor(name);
         var methodName = constructor ? currentClass.getName() : name;
-        var type = typeResolver.getType(context, descriptor, signature).getReturnType();
+        var type = typeResolver.getMethodReturnType(descriptor, signature);
         var method =
             currentClass
                 .findMethod(descriptor, name)

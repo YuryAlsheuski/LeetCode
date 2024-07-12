@@ -1,7 +1,6 @@
 package com.alsheuski.reflection.result.util;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toSet;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 
 import com.alsheuski.reflection.result.model.MetaClass;
@@ -12,7 +11,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -161,12 +161,6 @@ public class LoaderUtil {
     }
   }
 
-  public static Set<MetaClass> getLinkedWith(String classFullName, List<MetaClass> classes) {
-    return classes.stream()
-        .filter(clazz -> !clazz.getCalledWith(classFullName).isEmpty())
-        .collect(toSet());
-  }
-
   public static String printLinkedWith(String classFullName, List<MetaClass> classes) {
     var sb = new StringBuffer();
     for (MetaClass mc : classes) {
@@ -178,12 +172,12 @@ public class LoaderUtil {
       for (var linkedMethod : linkedMethods) {
         var argsStr =
             linkedMethod.getArgs().stream()
-                .map(arg -> getClassName(arg.getType().getClassName()) + " " + arg.getName())
+                .map(arg -> arg.getType().printClassName(getPrinter()) + " " + arg.getName())
                 .collect(joining(", "));
         var returnTypeStr =
             linkedMethod.isConstructor()
                 ? ""
-                : " " + getClassName(linkedMethod.getReturnType().getClassName());
+                : " " + linkedMethod.getReturnType().printClassName(getPrinter());
         var staticPrefix = linkedMethod.isStatic() ? " static" : "";
         sb.append(
             String.format(
@@ -198,6 +192,10 @@ public class LoaderUtil {
       sb.append("}\n");
     }
     return sb.toString();
+  }
+
+  private static Function<String, String> getPrinter() {
+    return LoaderUtil::getClassName;
   }
 
   public static void loadClass(String classPath, ClassVisitor visitor) {
@@ -274,5 +272,30 @@ public class LoaderUtil {
       String paramType = paramsString.substring(typeStart, i);
       formalTypeParameters.put(paramName, paramType);
     }
+  }
+
+  public static Optional<String> parseGenericMethodPrefix(
+      Map<String, String> formalToTypeParameters) {
+    if (formalToTypeParameters.isEmpty()) {
+      return Optional.empty();
+    }
+    String resultSignature =
+        formalToTypeParameters.entrySet().stream()
+            .map(
+                entry -> {
+                  if ("Ljava/lang/Object;".equals(entry.getValue())) {
+                    return entry.getKey();
+                  }
+                  return String.format(
+                      "%s extends %s", entry.getKey(), getClassName(entry.getValue()));
+                })
+            .collect(joining(", "));
+    return Optional.of(String.format("<%s>", resultSignature));
+  }
+
+  public static String parseGenericMethodReturnType(String signature) {
+    var index = signature.lastIndexOf(')');
+    var type = signature.substring(index + 1, signature.length() - 1);
+    return getClassName(type);
   }
 }

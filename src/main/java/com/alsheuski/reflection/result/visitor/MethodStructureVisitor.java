@@ -81,7 +81,7 @@ public class MethodStructureVisitor extends MethodVisitor {
     if (name.equals("this")) {
       return;
     }
-    var type = typeResolver.getType(context, descriptor, signature);
+    var type = typeResolver.getType(descriptor, signature);
     var arg = new Argument(type, name);
     currentMethod.addArgument(arg);
   }

@@ -6,6 +6,6 @@ import java.util.Map;
 public class GenericChild extends GenericParent<List<String>, String, Map<String,Integer>> {
 
   public void printSize() {
-    // get(List.of("string")).size();
+    //get(null).length();
   }
 }

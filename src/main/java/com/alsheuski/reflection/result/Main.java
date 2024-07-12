@@ -21,7 +21,7 @@ public class Main {
     configManager.addConfig(new ClassVisitorConfig(className, i -> true));
 
     var result =
-        new ClassStructureVisitor(root, configManager, allowedClassPaths, 2).printAllDeps(new ClassLoadingContext(className,false));
+        new ClassStructureVisitor(root, configManager, allowedClassPaths, 2).getAllDeps(new ClassLoadingContext(className,false));
 
     System.err.println(printLinkedWith(className, new ArrayList<>(result.values())));
   }

@@ -16,12 +16,16 @@ public class ClassLoadingContext {
     this(currentClass, null, true);
   }
 
+  public ClassLoadingContext(String currentClass, ClassLoadingContext childClassContext) {
+    this(currentClass, childClassContext, false);
+  }
+
   public ClassLoadingContext(
       String currentClass, ClassLoadingContext childClassContext, boolean addToResults) {
 
     this.currentClass = new MetaClass(currentClass);
     this.childClassContext = childClassContext;
-    this.addToResults = childClassContext == null && addToResults;
+    this.addToResults = addToResults;
   }
 
   public MetaClass getCurrentClass() {

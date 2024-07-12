@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
 
 public class Method {
 
@@ -13,13 +12,13 @@ public class Method {
   private final List<Argument> args;
   private final String name;
   private final boolean isConstructor;
-  private  Type returnType;
+  private  ResultType returnType;
   private List<String> calledFrom;
 
   public Method(
       int access,
       String descriptor,
-      Type returnType,
+      ResultType returnType,
       String name,
       boolean isConstructor) { // todo migrate to MethodNode
 
@@ -36,11 +35,11 @@ public class Method {
     return args;
   }
 
-  public void setReturnType(Type returnType) {
+  public void setReturnType(ResultType returnType) {
     this.returnType = returnType;
   }
 
-  public Type getReturnType() {
+  public ResultType getReturnType() {
     return returnType;
   }
 

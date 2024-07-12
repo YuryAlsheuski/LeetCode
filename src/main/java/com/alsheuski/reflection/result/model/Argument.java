@@ -1,19 +1,18 @@
 package com.alsheuski.reflection.result.model;
 
-import org.objectweb.asm.Type;
 
 import java.util.Objects;
 
 public class Argument {
-  private final Type type;
+  private final ResultType type;
   private final String name;
 
-  public Argument(Type type, String name) {
+  public Argument(ResultType type, String name) {
     this.type = type;
     this.name = name;
   }
 
-  public Type getType() {
+  public ResultType getType() {
     return type;
   }
 
