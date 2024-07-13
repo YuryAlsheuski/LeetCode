@@ -9,7 +9,7 @@ public class Signature {
     this.signature = signature;
   }
 
-  public Signature(String signature, boolean hasFormalArgs) {
+  public Signature(String signature, boolean hasFormalArgs) {//todo remove class
     this.signature = signature;
     this.hasFormalArgs = hasFormalArgs;
   }

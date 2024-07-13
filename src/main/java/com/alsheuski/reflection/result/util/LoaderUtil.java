@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,7 +179,10 @@ public class LoaderUtil {
       if (linkedMethods.isEmpty()) {
         continue;
       }
-      sb.append(String.format("public class %s {\n", mc.getName())); // todo add interface support
+      var signature = getClassSignature(mc);
+      sb.append(
+          String.format(
+              "public class %s%s {\n", mc.getName(), signature)); // todo add interface support
       for (var linkedMethod : linkedMethods) {
         var argsStr =
             linkedMethod.getArgs().stream()
@@ -205,6 +208,15 @@ public class LoaderUtil {
     return sb.toString();
   }
 
+  private static String getClassSignature(MetaClass mc) {
+    var signature = mc.getSignature();
+    if (signature == null) {
+      return "";
+    }
+    var methodGenericArgs = parseFormalTypeParameters(signature.getValue());
+    return parseGenericMethodPrefix(methodGenericArgs).map(prefix -> prefix + " ").orElse("");
+  }
+
   private static Function<String, String> getPrinter() {
     return LoaderUtil::getClassName;
   }
@@ -220,7 +232,7 @@ public class LoaderUtil {
   }
 
   public static Map<String, String> parseFormalTypeParameters(String signature) {
-    Map<String, String> formalTypeParameters = new HashMap<>();
+    Map<String, String> formalTypeParameters = new LinkedHashMap<>();
 
     int startIndex = signature.indexOf('<');
     int endIndex = findMatchingAngleBracket(signature, startIndex);
