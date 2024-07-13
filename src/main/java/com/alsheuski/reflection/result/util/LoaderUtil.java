@@ -56,7 +56,7 @@ public class LoaderUtil {
     var genericClassNames = splitGenericClasses(genericClasses); // todo upgrade class printing
     return genericClassNames.stream()
         .map(LoaderUtil::getClassName)
-        .collect(Collectors.joining(","));
+        .collect(Collectors.joining(", "));
   }
 
   private static List<String> splitGenericClasses(String genericClasses) {
