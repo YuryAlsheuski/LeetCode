@@ -26,18 +26,19 @@ public class TypeResolver {
       return;
     }
     if (!context.hasChild()) {
-      // var signature = getClassSignature(classSignature, classSignature);
-      context.getCurrentClass().setSignature(new Signature(classSignature));
+      var withoutFormalArgs = removeGenericClassPrefix(classSignature);
+      var hasFormalArgs = !withoutFormalArgs.equals(classSignature);
+      context.getCurrentClass().setSignature(new Signature(classSignature, hasFormalArgs));
       return;
     }
     var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
     var preparedChildSignature =
-        getClassSignature(childClassSignature.getValue(), childClassSignature.getValue());
-    var solvedSignature = getClassSignature(preparedChildSignature.getValue(), classSignature);
+        solve(childClassSignature.getValue(), childClassSignature.getValue());
+    var solvedSignature = solve(preparedChildSignature.getValue(), classSignature);
     context.getCurrentClass().setSignature(solvedSignature);
   }
 
-  private Signature getClassSignature(String childSignature, String parentSignature) {
+  private Signature solve(String childSignature, String parentSignature) {
     var signDict = new GenericArgsVisitor(childSignature, parentSignature).load();
     formalToConcreteSignature.putAll(signDict);
     var resolver = getResolver(parentSignature);

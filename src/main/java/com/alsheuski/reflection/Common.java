@@ -11,7 +11,7 @@ public class Common {
    // var some= new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
    //new GenericChild().get(null);
     //new GenericChild().getX(null);
-    new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
+    new GenericChild().superParentGet(null);
   }
   /* public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
