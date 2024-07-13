@@ -8,7 +8,6 @@ import static org.objectweb.asm.Opcodes.ASM9;
 
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.model.ResultType;
-import com.alsheuski.reflection.result.model.Signature;
 import com.alsheuski.reflection.result.visitor.GenericArgsVisitor;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,27 +25,24 @@ public class TypeResolver {
       return;
     }
     if (!context.hasChild()) {
-      var withoutFormalArgs = removeGenericClassPrefix(classSignature);
-      var hasFormalArgs = !withoutFormalArgs.equals(classSignature);
-      context.getCurrentClass().setSignature(new Signature(classSignature, hasFormalArgs));
+      context.getCurrentClass().setSignature(classSignature);
       return;
     }
     var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
-    var preparedChildSignature = solve(childClassSignature.getValue());
+    var preparedChildSignature = solve(childClassSignature);
 
-    var signDict = new GenericArgsVisitor(preparedChildSignature.getValue(), classSignature).load();
+    var signDict = new GenericArgsVisitor(preparedChildSignature, classSignature).load();
     formalToConcreteSignature.putAll(signDict);
 
     var solvedSignature = solve(classSignature);
     context.getCurrentClass().setSignature(solvedSignature);
   }
 
-  private Signature solve(String parentSignature) {
+  private String solve(String parentSignature) {
     var resolver = getResolver(parentSignature);
     var solvedSignature = resolver.getSignature();
-    if (solvedSignature.hasFormalArgs()) {
-      String result = removeGenericClassPrefix(solvedSignature.getValue());
-      return new Signature(result);
+    if (resolver.hasFormalArgs) {
+      return removeGenericClassPrefix(solvedSignature);
     }
     return solvedSignature;
   }
@@ -56,7 +52,7 @@ public class TypeResolver {
       return new ResultType(Type.getType(descriptor));
     }
     var resolver = getResolver(signature);
-    var solvedSignature = resolver.getSignature().getValue();
+    var solvedSignature = resolver.getSignature();
     return new ResultType(Type.getType(solvedSignature));
   }
 
@@ -65,7 +61,7 @@ public class TypeResolver {
       return new ResultType(Type.getMethodType(descriptor).getReturnType());
     }
     var resolver = getResolver(signature);
-    var solvedSignature = resolver.getSignature().getValue();
+    var solvedSignature = resolver.getSignature();
 
     if (resolver.hasFormalArgs) {
       var methodGenericArgs = parseFormalTypeParameters(solvedSignature);
@@ -115,8 +111,8 @@ public class TypeResolver {
       return new ArgumentVisitor();
     }
 
-    public Signature getSignature() {
-      return new Signature(signature, hasFormalArgs);
+    public String getSignature() {
+      return signature;
     }
 
     private class ArgumentVisitor extends SignatureVisitor {

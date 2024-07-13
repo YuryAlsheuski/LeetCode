@@ -213,7 +213,7 @@ public class LoaderUtil {
     if (signature == null) {
       return "";
     }
-    var methodGenericArgs = parseFormalTypeParameters(signature.getValue());
+    var methodGenericArgs = parseFormalTypeParameters(signature);
     return parseGenericMethodPrefix(methodGenericArgs).map(prefix -> prefix + " ").orElse("");
   }
 
