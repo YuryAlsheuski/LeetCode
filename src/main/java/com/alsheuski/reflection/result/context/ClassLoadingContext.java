@@ -7,6 +7,7 @@ public class ClassLoadingContext {
   private final MetaClass currentClass;
   private final ClassLoadingContext childClassContext;
   private final boolean addToResults;
+  private String loadingContextSignature;
 
   public ClassLoadingContext(String currentClass, boolean addToResults) {
     this(currentClass, null, addToResults);
@@ -46,5 +47,13 @@ public class ClassLoadingContext {
 
   public boolean addToResults() {
     return addToResults;
+  }
+
+  public String getLoadingContextSignature() {
+    return loadingContextSignature;
+  }
+
+  public void setLoadingContextSignature(String loadingContextSignature) {
+    this.loadingContextSignature = loadingContextSignature;
   }
 }

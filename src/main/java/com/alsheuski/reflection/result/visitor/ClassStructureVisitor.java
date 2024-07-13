@@ -111,7 +111,7 @@ public class ClassStructureVisitor {
   private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
     return new ClassVisitor(ASM9) {
 
-      private TypeResolver typeResolver;
+      private final TypeResolver typeResolver = new TypeResolver();
 
       @Override
       public void visit(
@@ -122,10 +122,10 @@ public class ClassStructureVisitor {
           String superName,
           String[] interfaces) {
 
+        context.setLoadingContextSignature(signature);
+        typeResolver.resolveClassSignature(context);
+
         var hasValidParent = classPathFilter.test(superName);
-       // var resultSignature =
-        context.getCurrentClass().setSignature(signature);
-        typeResolver = new TypeResolver(context);
         if (hasValidParent) {
           ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context));
         }

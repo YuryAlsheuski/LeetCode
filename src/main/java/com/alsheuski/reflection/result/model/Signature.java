@@ -14,7 +14,7 @@ public class Signature {
     this.hasFormalArgs = hasFormalArgs;
   }
 
-  public String getSignature() {
+  public String getValue() {
     return signature;
   }
 

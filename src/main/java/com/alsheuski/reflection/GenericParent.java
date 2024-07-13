@@ -3,7 +3,7 @@ package com.alsheuski.reflection;
 import java.util.List;
 import java.util.Map;
 
-public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>> extends GenericSuperParent<List<TTT>>{
+public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>> extends GenericSuperParent<List<P>>{
   public K get(List<P> properties) {
     return null;
   }

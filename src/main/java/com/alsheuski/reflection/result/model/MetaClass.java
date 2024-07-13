@@ -14,7 +14,7 @@ public class MetaClass {
   private final Set<Method> methods;
   private final String name;
   private final String fullName;
-  private String signature;
+  private Signature signature;
 
   public MetaClass(String fullName) {
     this(fullName, new HashSet<>());
@@ -54,11 +54,11 @@ public class MetaClass {
     return methods.stream().filter(method -> method.isCalledFrom(className)).collect(toList());
   }
 
-  public String getSignature() {
+  public Signature getSignature() {
     return signature;
   }
 
-  public void setSignature(String signature) {
+  public void setSignature(Signature signature) {
     this.signature = signature;
   }
 

@@ -3,12 +3,14 @@ package com.alsheuski.reflection.result;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseFormalTypeParameters;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericMethodPrefix;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericMethodReturnType;
-import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericTypes;
+import static com.alsheuski.reflection.result.util.LoaderUtil.removeGenericClassPrefix;
 import static org.objectweb.asm.Opcodes.ASM9;
 
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.model.ResultType;
+import com.alsheuski.reflection.result.model.Signature;
 import com.alsheuski.reflection.result.visitor.GenericArgsVisitor;
+import java.util.HashMap;
 import java.util.Map;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
@@ -16,18 +18,35 @@ import org.objectweb.asm.signature.SignatureVisitor;
 
 public class TypeResolver {
 
-  private final Map<String, String> formalToConcreteSignature;
+  private final Map<String, String> formalToConcreteSignature = new HashMap<>(3);
 
-  public TypeResolver(ClassLoadingContext context) {
-    var classSignature = context.getCurrentClass().getSignature();
-    if (classSignature != null && context.hasChild()) {
-      var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
-      var childClassSignatures = parseGenericTypes(childClassSignature);
-      formalToConcreteSignature =
-          new GenericArgsVisitor(childClassSignatures, classSignature).load();
-    } else {
-      formalToConcreteSignature = Map.of();
+  public void resolveClassSignature(ClassLoadingContext context) {
+    var classSignature = context.getLoadingContextSignature();
+    if (classSignature == null) {
+      return;
     }
+    if (!context.hasChild()) {
+      // var signature = getClassSignature(classSignature, classSignature);
+      context.getCurrentClass().setSignature(new Signature(classSignature));
+      return;
+    }
+    var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
+    var preparedChildSignature =
+        getClassSignature(childClassSignature.getValue(), childClassSignature.getValue());
+    var solvedSignature = getClassSignature(preparedChildSignature.getValue(), classSignature);
+    context.getCurrentClass().setSignature(solvedSignature);
+  }
+
+  private Signature getClassSignature(String childSignature, String parentSignature) {
+    var signDict = new GenericArgsVisitor(childSignature, parentSignature).load();
+    formalToConcreteSignature.putAll(signDict);
+    var resolver = getResolver(parentSignature);
+    var solvedSignature = resolver.getSignature();
+    if (solvedSignature.hasFormalArgs()) {
+      String result = removeGenericClassPrefix(solvedSignature.getValue());
+      return new Signature(result);
+    }
+    return solvedSignature;
   }
 
   public ResultType getType(String descriptor, String signature) {
@@ -35,7 +54,7 @@ public class TypeResolver {
       return new ResultType(Type.getType(descriptor));
     }
     var resolver = getResolver(signature);
-    var solvedSignature = resolver.getSignature();
+    var solvedSignature = resolver.getSignature().getValue();
     return new ResultType(Type.getType(solvedSignature));
   }
 
@@ -44,7 +63,7 @@ public class TypeResolver {
       return new ResultType(Type.getMethodType(descriptor).getReturnType());
     }
     var resolver = getResolver(signature);
-    var solvedSignature = resolver.getSignature();
+    var solvedSignature = resolver.getSignature().getValue();
 
     if (resolver.hasFormalArgs) {
       var methodGenericArgs = parseFormalTypeParameters(solvedSignature);
@@ -94,8 +113,8 @@ public class TypeResolver {
       return new ArgumentVisitor();
     }
 
-    public String getSignature() {
-      return signature;
+    public Signature getSignature() {
+      return new Signature(signature, hasFormalArgs);
     }
 
     private class ArgumentVisitor extends SignatureVisitor {

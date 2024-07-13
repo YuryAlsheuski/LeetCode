@@ -150,15 +150,26 @@ public class LoaderUtil {
       } else if (c == '>') {
         nestedLevel--;
       } else if (c == ';' && nestedLevel == 0) {
-        result.add(input.substring(start, index + 1));
+        String signature = input.substring(start, index + 1);
+        result.add(clearFormalTypes(signature));
         start = index + 1;
       }
       index++;
     }
 
     if (start < len) {
-      result.add(input.substring(start));
+      String signature = input.substring(start);
+      result.add(clearFormalTypes(signature));
     }
+  }
+
+  private static String clearFormalTypes(
+      String signature) { // todo check is it problem for other cases
+    if (!signature.contains(":")) {
+      return signature;
+    }
+    int index = signature.lastIndexOf(":") + 1;
+    return signature.substring(index);
   }
 
   public static String printLinkedWith(String classFullName, List<MetaClass> classes) {
@@ -297,5 +308,9 @@ public class LoaderUtil {
     var index = signature.lastIndexOf(')');
     var type = signature.substring(index + 1, signature.length() - 1);
     return getClassName(type);
+  }
+
+  public static String removeGenericClassPrefix(String signature) {
+    return signature.replaceFirst("^<(([^<>]*)|(<([^<>]*)>))*>", "");
   }
 }

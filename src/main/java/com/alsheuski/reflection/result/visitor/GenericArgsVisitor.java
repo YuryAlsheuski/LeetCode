@@ -1,5 +1,6 @@
 package com.alsheuski.reflection.result.visitor;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericTypes;
 import static org.objectweb.asm.Opcodes.ASM9;
 
 import java.util.HashMap;
@@ -12,16 +13,16 @@ public class GenericArgsVisitor {
 
   private final Map<String, String> formalToConcreteSignature;
   private final String parentSignature;
-  private final List<String> argSignatures;
+  private final List<String> genericSignatures;
 
-  public GenericArgsVisitor(List<String> argSignatures, String parentSignature) {
-    formalToConcreteSignature = new HashMap<>(argSignatures.size());
+  public GenericArgsVisitor(String childSignature, String parentSignature) {
     this.parentSignature = parentSignature;
-    this.argSignatures = argSignatures;
+    this.genericSignatures = parseGenericTypes(childSignature);
+    formalToConcreteSignature = new HashMap<>(genericSignatures.size());
   }
 
   public Map<String, String> load() {
-    var argSignaturesIterator = argSignatures.iterator();
+    var argSignaturesIterator = genericSignatures.iterator();
     new SignatureReader(parentSignature)
         .accept(
             new SignatureVisitor(ASM9) {
