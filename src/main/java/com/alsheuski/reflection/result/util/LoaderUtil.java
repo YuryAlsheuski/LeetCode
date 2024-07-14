@@ -28,13 +28,18 @@ public class LoaderUtil {
     if ("*".equals(classFullName)) {
       return "?";
     }
-    return parseClassName(classFullName.replace("*", "*;"));
+    if (classFullName.contains("*") && !classFullName.contains("*;")) {
+      classFullName = classFullName.replace("*", "*;");
+    }
+    return parseClassName(classFullName);
   }
 
   private static String parseClassName(String classFullName) {
     boolean isGenericType = classFullName.contains("<") && classFullName.contains(">");
     var result = new ArrayList<String>();
-
+    if (classFullName.startsWith("[")) { // arrays
+      classFullName = classFullName.substring(1) + "[]";
+    }
     if (isGenericType) {
       var startIndex = classFullName.indexOf("<");
       var endIndex = classFullName.lastIndexOf(">");
@@ -45,6 +50,11 @@ public class LoaderUtil {
       result.add("<");
       result.add(parseGenericClasses(genericClasses));
       result.add(">");
+      if (endIndex < classFullName.length() - 1) {
+        result.add(
+            classFullName.substring(
+                endIndex + 1)); // for arrays [] brackets and possible other staff
+      }
     } else {
       result.add(parseSimpleClassName(classFullName));
     }

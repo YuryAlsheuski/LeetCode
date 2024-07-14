@@ -12,4 +12,12 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
   public <X, Y extends List<P>, K> Y getX(List<X> properties) {
     return null;
   }
+
+ /* public String[] getParentSimpleArr(byte[] incoming){
+    return null;
+  }*/
+
+  public P getParentGenericArr(TTT incoming){
+    return null;
+  }
 }
