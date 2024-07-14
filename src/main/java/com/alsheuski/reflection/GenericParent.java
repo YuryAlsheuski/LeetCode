@@ -5,6 +5,7 @@ import java.util.Map;
 
 public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     extends GenericSuperParent<List<TTT[]>> {
+
   public K get(List<P> properties) {
     return null;
   }
@@ -13,11 +14,15 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return null;
   }
 
- /* public String[] getParentSimpleArr(byte[] incoming){
+  public String[] getParentSimpleArr(byte[] incoming){
     return null;
-  }*/
+  }
 
   public P getParentGenericArr(TTT incoming){
+    return null;
+  }
+
+  public List<P> getParccdcdcentGenericArr(TTT incoming){
     return null;
   }
 }

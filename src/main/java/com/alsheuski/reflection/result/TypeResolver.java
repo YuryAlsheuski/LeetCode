@@ -1,5 +1,6 @@
 package com.alsheuski.reflection.result;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseFormalTypeParameters;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericMethodPrefix;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseGenericMethodReturnType;
@@ -54,7 +55,7 @@ public class TypeResolver {
     var resolver = getResolver(signature);
     var solvedSignature = resolver.getSignature();
     if (resolver.hasFormalArgs) {
-      return new ResultType(solvedSignature);
+      return new ResultType(getClassName(solvedSignature));
     }
     return new ResultType(Type.getType(solvedSignature));
   }
