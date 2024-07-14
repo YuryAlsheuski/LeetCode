@@ -50,10 +50,8 @@ public class LoaderUtil {
       result.add("<");
       result.add(parseGenericClasses(genericClasses));
       result.add(">");
-      if (endIndex < classFullName.length() - 1) {
-        result.add(
-            classFullName.substring(
-                endIndex + 1)); // for arrays [] brackets and possible other staff
+      if (classFullName.endsWith("[]")) {
+        result.add("[]"); // for arrays [] brackets
       }
     } else {
       result.add(parseSimpleClassName(classFullName));
@@ -245,11 +243,12 @@ public class LoaderUtil {
     Map<String, String> formalTypeParameters = new LinkedHashMap<>();
 
     int startIndex = signature.indexOf('<');
-    int endIndex = findMatchingAngleBracket(signature, startIndex);
 
-    if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex) {
-      throw new IllegalArgumentException("Invalid signature format: " + signature);
+    if (startIndex == -1) {
+      return Map.of();
     }
+
+    int endIndex = findMatchingAngleBracket(signature, startIndex);
 
     String paramsString = signature.substring(startIndex + 1, endIndex);
     parseParameters(paramsString, formalTypeParameters);

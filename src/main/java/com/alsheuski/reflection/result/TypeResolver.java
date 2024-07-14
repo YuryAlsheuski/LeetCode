@@ -53,6 +53,9 @@ public class TypeResolver {
     }
     var resolver = getResolver(signature);
     var solvedSignature = resolver.getSignature();
+    if (resolver.hasFormalArgs) {
+      return new ResultType(solvedSignature);
+    }
     return new ResultType(Type.getType(solvedSignature));
   }
 

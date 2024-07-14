@@ -1,6 +1,8 @@
 package com.alsheuski.reflection;
 
 
+import java.util.List;
+import java.util.Map;
 
 public class Common {
 
@@ -8,7 +10,7 @@ public class Common {
     // var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     //  var some= new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
-    // new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
+  //  new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
     /// new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     // new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
@@ -18,8 +20,8 @@ public class Common {
    // new GenericChild().getParentSimpleArr(null);
    // new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentSimpleArr(null);
 
-   new GenericChild().getParentGenericArr(null);
-    //new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);
+ //new GenericChild().getParentGenericArr(null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);
   }
   /* public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());

@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
-    extends GenericSuperParent<List<TTT>> {
+    extends GenericSuperParent<List<TTT[]>> {
   public K get(List<P> properties) {
     return null;
   }
