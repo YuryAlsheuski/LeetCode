@@ -25,5 +25,5 @@ public class Main {
 
     System.err.println(printLinkedWith(className, new ArrayList<>(result.values())));
   }
-  //todo check array support type and as generic type too
+  //todo check methods overriding
 }

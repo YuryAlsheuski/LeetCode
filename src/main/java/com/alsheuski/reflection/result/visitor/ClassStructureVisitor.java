@@ -90,7 +90,8 @@ public class ClassStructureVisitor {
       var nextClassName = entry.getKey();
 
       var nextClassContext =
-          rootClassLoadingContext.getClassFullName().equals(nextClassName)
+          nextClassName.startsWith(
+                  rootClassLoadingContext.getClassFullName()) // check root and his nested classes
               ? rootClassLoadingContext
               : new ClassLoadingContext(nextClassName);
 

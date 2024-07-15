@@ -21,6 +21,6 @@ public class ConfigManager {
   }
 
   public Predicate<Integer> getAccessFilter(String className) {
-    return classNameToConfig.getOrDefault(className, defaultConfig).getAccessFilter();
+    return classNameToConfig.getOrDefault(className, defaultConfig).getAccessIdentifierFilter();
   }
 }
