@@ -19,6 +19,8 @@ import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
+import org.eclipse.jface.text.Document;
+import org.eclipse.text.edits.TextEdit;
 
 public class VarReplacer {
 
@@ -38,7 +40,14 @@ public class VarReplacer {
 
     compilationUnit.accept(getVisitor());
 
-    return compilationUnit.toString();
+    Document document = new Document(source);
+    TextEdit edits = compilationUnit.rewrite(document, options);
+    try {
+      edits.apply(document);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return document.get();
   }
 
   private ASTVisitor getVisitor() {
