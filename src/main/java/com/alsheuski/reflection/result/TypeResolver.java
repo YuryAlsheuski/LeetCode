@@ -62,9 +62,19 @@ public class TypeResolver {
 
   public ResultType getMethodReturnType(String descriptor, String signature) {
 
-    if (descriptor.endsWith(")V") || signature == null) {
+    if (signature == null) {
       return new ResultType(Type.getMethodType(descriptor).getReturnType());
     }
+    try {//try to get void type or all primitive types
+      var type = Type.getMethodType(signature).getReturnType();
+      var hasGenericParams = type.getClassName().contains("<");
+      if (!hasGenericParams) {
+        return new ResultType(type);
+      }
+
+    } catch (Exception ex) { // ignore
+    }
+
     var resolver = getResolver(signature);
     var solvedSignature = resolver.getSignature();
 

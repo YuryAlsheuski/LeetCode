@@ -21,7 +21,9 @@ public class Common {
     new GenericChild().getParentGenericArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);*/
     GenericParent<?,String,?> pp = new GenericChild();
-    String instance = pp.get(null);
+    byte b =0;
+    short s=0;
+    pp.primitivesTest(null);
   }
    /*public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());

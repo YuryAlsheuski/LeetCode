@@ -32,6 +32,10 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return null;
   }
 
+  public int primitivesTest(List<P> s){
+    return 0;
+  }
+
   public static class InnerGetter {
 
     public GenericParent<?, ?, ?> get() {
