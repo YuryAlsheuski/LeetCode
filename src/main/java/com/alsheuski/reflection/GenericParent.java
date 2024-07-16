@@ -25,4 +25,11 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
   public List<P> getParccdcdcentGenericArr(TTT incoming){
     return null;
   }
+
+ public static class InnerGetter{
+
+    public GenericParent<?,?,?> get(){
+      return new GenericChild();
+    }
+  }
 }

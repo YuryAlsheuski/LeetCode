@@ -59,6 +59,10 @@ public class Method {
     return calledFrom.contains(className);
   }
 
+  public List<String> getCalls(){
+    return calledFrom;
+  }
+
   public boolean isConstructor() {
     return isConstructor;
   }

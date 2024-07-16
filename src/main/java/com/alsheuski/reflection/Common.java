@@ -20,7 +20,7 @@ public class Common {
 
  new GenericChild().getParentGenericArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);*/
-    var instance = new ParentGetter().get();
+    GenericParent instance = new ParentGetter().get();
     instance.getParentGenericArr(null);
   }
    /*public String getALabel(List<ClassA> aas, List<String> second) {

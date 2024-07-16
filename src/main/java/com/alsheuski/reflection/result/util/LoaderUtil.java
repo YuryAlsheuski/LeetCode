@@ -1,6 +1,7 @@
 package com.alsheuski.reflection.result.util;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 
 import com.alsheuski.reflection.result.model.MetaClass;
@@ -180,10 +181,22 @@ public class LoaderUtil {
     return signature.substring(index);
   }
 
-  public static String printLinkedWith(String classFullName, List<MetaClass> classes) {
+  public static String printLinkedWith(
+      String classFullName,
+      List<MetaClass> classes) { // todo refactor this class - it is pretty complicated
+
     var sb = new StringBuffer();
     for (MetaClass mc : classes) {
-      var linkedMethods = mc.getCalledWith(classFullName);
+      var linkedMethods =
+          mc.getMethods().stream()
+              .filter(
+                  method ->
+                      method.getCalls().stream()
+                          .anyMatch(
+                              className ->
+                                  className.equals(classFullName)
+                                      || className.contains(classFullName + "$")))
+              .collect(toList());
       if (linkedMethods.isEmpty()) {
         continue;
       }

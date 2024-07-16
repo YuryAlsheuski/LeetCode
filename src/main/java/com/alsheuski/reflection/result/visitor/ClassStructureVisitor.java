@@ -89,11 +89,14 @@ public class ClassStructureVisitor {
     for (var entry : entrySet) {
       var nextClassName = entry.getKey();
 
+      var rootClass = rootClassLoadingContext.getClassFullName();
+      var addToResults =
+          !nextClassName.contains(rootClass + "$"); // for nested classes in root class
+
       var nextClassContext =
-          nextClassName.startsWith(
-                  rootClassLoadingContext.getClassFullName()) // check root and his nested classes
+          rootClass.equals(nextClassName)
               ? rootClassLoadingContext
-              : new ClassLoadingContext(nextClassName);
+              : new ClassLoadingContext(nextClassName, addToResults);
 
       var nextClass =
           classNameToMetaClass.containsKey(nextClassName)
