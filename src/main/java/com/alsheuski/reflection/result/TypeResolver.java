@@ -61,7 +61,8 @@ public class TypeResolver {
   }
 
   public ResultType getMethodReturnType(String descriptor, String signature) {
-    if (signature == null) {
+
+    if (descriptor.endsWith(")V") || signature == null) {
       return new ResultType(Type.getMethodType(descriptor).getReturnType());
     }
     var resolver = getResolver(signature);

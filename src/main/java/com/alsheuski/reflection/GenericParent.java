@@ -14,21 +14,27 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return null;
   }
 
-  public String[] getParentSimpleArr(byte[] incoming){
+  public String[] getParentSimpleArr(byte[] incoming) {
     return null;
   }
 
-  public P getParentGenericArr(TTT incoming){
+  public P getParentGenericArr(TTT incoming) {
     return null;
   }
 
-  public List<P> getParccdcdcentGenericArr(TTT incoming){
+  public List<P> getParccdcdcentGenericArr(TTT incoming) {
     return null;
   }
 
- public static class InnerGetter{
+  public void getVoidArr(TTT incoming) {}
 
-    public GenericParent<?,?,?> get(){
+  public List<P> getVoidArr() {
+    return null;
+  }
+
+  public static class InnerGetter {
+
+    public GenericParent<?, ?, ?> get() {
       return new GenericChild();
     }
   }
