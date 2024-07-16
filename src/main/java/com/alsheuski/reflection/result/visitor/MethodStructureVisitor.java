@@ -78,7 +78,7 @@ public class MethodStructureVisitor extends MethodVisitor {
   public void visitLocalVariable(
       String name, String descriptor, String signature, Label start, Label end, int index) {
 
-    if (name.equals("this")) {
+    if (name.equals("this") || !currentMethod.isArgumentDescriptor(descriptor)) {
       return;
     }
     var type = typeResolver.getType(descriptor, signature);

@@ -1,11 +1,13 @@
 package com.alsheuski.reflection;
 
 
+import java.util.List;
+import java.util.Map;
 
 public class Common {
 
   public Common() {
-    /*var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
+    var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
      var some= new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
    new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
@@ -18,8 +20,8 @@ public class Common {
     new GenericChild().getParentSimpleArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentSimpleArr(null);
 
-    new GenericChild().getParentGenericArr(null);
-    new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);*/
+    new GenericChild().getParentGenericArr(null,null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null,null);
     GenericParent<?,String,?> pp = new GenericChild();
     byte b =0;
     short s=0;

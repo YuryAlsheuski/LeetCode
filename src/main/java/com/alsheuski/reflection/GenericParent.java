@@ -18,7 +18,7 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return null;
   }
 
-  public P getParentGenericArr(TTT incoming) {
+  public P getParentGenericArr(TTT incoming, K out) {
     return null;
   }
 

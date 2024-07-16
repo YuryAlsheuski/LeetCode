@@ -1,9 +1,13 @@
 package com.alsheuski.reflection.result.model;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 public class Method {
 
@@ -12,7 +16,9 @@ public class Method {
   private final List<Argument> args;
   private final String name;
   private final boolean isConstructor;
-  private  ResultType returnType;
+  private final List<String> argDescriptors;
+
+  private ResultType returnType;
   private List<String> calledFrom;
 
   public Method(
@@ -29,6 +35,7 @@ public class Method {
     this.isConstructor = isConstructor;
     args = new ArrayList<>();
     calledFrom = new ArrayList<>();
+    argDescriptors = getChildDescriptors(descriptor);
   }
 
   public List<Argument> getArgs() {
@@ -59,7 +66,7 @@ public class Method {
     return calledFrom.contains(className);
   }
 
-  public List<String> getCalls(){
+  public List<String> getCalls() {
     return calledFrom;
   }
 
@@ -73,6 +80,20 @@ public class Method {
 
   public boolean isStatic() {
     return (access & Opcodes.ACC_STATIC) != 0;
+  }
+
+  public boolean needsToLoadArgs() {
+    return args.size() < argDescriptors.size();
+  }
+
+  public boolean isArgumentDescriptor(String descriptor) {
+    return needsToLoadArgs() && argDescriptors.contains(descriptor);
+  }
+
+  private List<String> getChildDescriptors(String methodDescriptor) {
+    return Arrays.stream(Type.getMethodType(methodDescriptor).getArgumentTypes())
+        .map(Type::getDescriptor)
+        .collect(toList());
   }
 
   @Override
