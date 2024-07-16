@@ -18,10 +18,10 @@ public class Common {
     new GenericChild().getParentSimpleArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentSimpleArr(null);
 
- new GenericChild().getParentGenericArr(null);
+    new GenericChild().getParentGenericArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null);*/
-    GenericParent instance = new ParentGetter().get();
-    instance.getParentGenericArr(null);
+    GenericParent<?,String,?> pp = new GenericChild();
+    String instance = pp.get(null);
   }
    /*public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
