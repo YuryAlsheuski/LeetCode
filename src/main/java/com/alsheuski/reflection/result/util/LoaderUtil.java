@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toList;
 import static org.objectweb.asm.ClassReader.EXPAND_FRAMES;
 
 import com.alsheuski.reflection.result.model.MetaClass;
+import com.alsheuski.reflection.result.model.Method;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -181,6 +182,42 @@ public class LoaderUtil {
     return signature.substring(index);
   }
 
+  public static String print(List<MetaClass> classes) {
+
+    var sb = new StringBuffer();
+
+    for (MetaClass mc : classes) {
+      var signature = getClassSignature(mc);
+      sb.append(
+          String.format(
+              "public class %s%s {\n", mc.getName(), signature)); // todo add interface support
+      for (var method : mc.getMethods()) {
+        printMethod(sb, method);
+      }
+      sb.append("}\n");
+    }
+    return sb.toString();
+  }
+
+  private static void printMethod(StringBuffer sb, Method method) {
+    var argsStr =
+        method.getArgs().stream()
+            .map(arg -> arg.getType().printClassName(getPrinter()) + " " + arg.getName())
+            .collect(joining(", "));
+    var returnTypeStr =
+        method.isConstructor() ? "" : " " + method.getReturnType().printClassName(getPrinter());
+    var staticPrefix = method.isStatic() ? " static" : "";
+    sb.append(
+        String.format(
+            "  public%s%s %s(%s);",
+            staticPrefix,
+            returnTypeStr,
+            method.getName(),
+            argsStr)); // todo if needs add real access descriptor e.g.
+    // public/protected/package - currently public stub only
+    sb.append("\n");
+  }
+
   public static String printLinkedWith(
       String classFullName,
       List<MetaClass> classes) { // todo refactor this class - it is pretty complicated
@@ -205,24 +242,7 @@ public class LoaderUtil {
           String.format(
               "public class %s%s {\n", mc.getName(), signature)); // todo add interface support
       for (var linkedMethod : linkedMethods) {
-        var argsStr =
-            linkedMethod.getArgs().stream()
-                .map(arg -> arg.getType().printClassName(getPrinter()) + " " + arg.getName())
-                .collect(joining(", "));
-        var returnTypeStr =
-            linkedMethod.isConstructor()
-                ? ""
-                : " " + linkedMethod.getReturnType().printClassName(getPrinter());
-        var staticPrefix = linkedMethod.isStatic() ? " static" : "";
-        sb.append(
-            String.format(
-                "  public%s%s %s(%s);",
-                staticPrefix,
-                returnTypeStr,
-                linkedMethod.getName(),
-                argsStr)); // todo if needs add real access descriptor e.g.
-        // public/protected/package - currently public stub only
-        sb.append("\n");
+        printMethod(sb, linkedMethod);
       }
       sb.append("}\n");
     }
