@@ -1,33 +1,37 @@
 package com.alsheuski.reflection;
 
-
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Common {
 
   public Common() {
+    var parent = new GenericChild();
+    parent.getParentGenericArr(null,null);
+    
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
-     var some= new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
+    var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
-   new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
-     new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
-     new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
-     new GenericChild().superParentGet(null);
-     new GenericChild().get(null);
-     new GenericChild().getX(null);
+    new GenericChild().superParentGet(null);
+    new GenericChild().get(null);
+    new GenericChild().getX(null);
     new GenericChild().getParentSimpleArr(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentSimpleArr(null);
 
-    new GenericChild().getParentGenericArr(null,null);
-    new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null,null);
-    GenericParent<?,String,?> pp = new GenericChild();
-    byte b =0;
-    short s=0;
+    new GenericChild().getParentGenericArr(null, null);
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null, null);
+    var pp = new GenericChild();
+    var b = 0;
+    var s = 0;
     pp.primitivesTest(null);
   }
-   /*public String getALabel(List<ClassA> aas, List<String> second) {
+
+  public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
@@ -50,11 +54,11 @@ public class Common {
     public String getStr() {
       return "fdsfsd";
     }
-  }*/
+  }
 
-  class ParentGetter{
+  class ParentGetter {
 
-    public GenericParent<?,?,?> get(){
+    public GenericParent<?, ?, ?> get() {
       return new GenericChild();
     }
   }
