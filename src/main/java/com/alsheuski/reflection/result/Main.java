@@ -1,7 +1,7 @@
 package com.alsheuski.reflection.result;
 
 import com.alsheuski.reflection.result.preprocessor.SourceClassPreprocessor;
-import com.alsheuski.reflection.result.resolver.PathResolver;
+import com.alsheuski.reflection.result.resolver.ClasspathResolver;
 import java.io.IOException;
 
 public class Main {
@@ -9,7 +9,7 @@ public class Main {
     String workingDir = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode";
     String rootClassPath = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/target/classes";
     String buildToolHome = "/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin";
-    String classpath = PathResolver.resolveClassPath(rootClassPath, buildToolHome);
+    String classpath = ClasspathResolver.resolve(rootClassPath, buildToolHome);
     SourceClassPreprocessor.simplifyTypes(
         "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/src/main/java/com/alsheuski/reflection/Common.java",
         workingDir,
