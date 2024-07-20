@@ -5,7 +5,7 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ASM9;
 
-import com.alsheuski.reflection.result.TypeResolver;
+import com.alsheuski.reflection.result.resolver.TypeResolver;
 import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;

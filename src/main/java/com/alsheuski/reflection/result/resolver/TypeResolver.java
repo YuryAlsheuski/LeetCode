@@ -1,4 +1,4 @@
-package com.alsheuski.reflection.result;
+package com.alsheuski.reflection.result.resolver;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.getClassName;
 import static com.alsheuski.reflection.result.util.LoaderUtil.parseFormalTypeParameters;

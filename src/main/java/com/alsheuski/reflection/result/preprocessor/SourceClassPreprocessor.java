@@ -1,27 +1,27 @@
 package com.alsheuski.reflection.result.preprocessor;
 
-import com.alsheuski.reflection.result.preprocessor.classpath.ClasspathProvider;
-import com.alsheuski.reflection.result.preprocessor.classpath.PathResolver;
+import com.alsheuski.reflection.result.resolver.PathResolver;
 import java.io.FileWriter;
 import java.io.IOException;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
-public class TestClassPreprocessor {
-  
-  private TestClassPreprocessor(){}
+public class SourceClassPreprocessor {
+
+  private SourceClassPreprocessor() {}
 
   public static String removerVarTypes(String pathToJavaFile) {
     return "";
   }
 
-  public static void simplifyTypes(String pathToJavaFile, String outputDir, ClasspathProvider classpathProvider) throws IOException {
-    pathToJavaFile = PathResolver.resolve(pathToJavaFile).toString();
-    outputDir = PathResolver.resolve(outputDir).toString();
+  public static void simplifyTypes(String pathToJavaFile, String outputDir, String classpath)
+      throws IOException {
+    pathToJavaFile = PathResolver.resolvePath(pathToJavaFile).toString();
+    outputDir = PathResolver.resolvePath(outputDir).toString();
 
     String output = new VarReplacer().replaceTypesToVar(pathToJavaFile);
     writeToFile(pathToJavaFile, output);
-    recompile(pathToJavaFile, outputDir, classpathProvider.getClassPath());
+    recompile(pathToJavaFile, outputDir, classpath);
   }
 
   private static void writeToFile(String pathToJavaFile, String content) throws IOException {

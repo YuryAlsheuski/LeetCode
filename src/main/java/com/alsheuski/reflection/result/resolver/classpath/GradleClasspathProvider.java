@@ -1,4 +1,4 @@
-package com.alsheuski.reflection.result.preprocessor.classpath;
+package com.alsheuski.reflection.result.resolver.classpath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -10,6 +10,7 @@ import java.util.List;
 //USE DefaultClasspathProvider if it possible
 
 public class GradleClasspathProvider implements ClasspathProvider{
+  public static final String GRADLE_CONFIG_NAME = "build.gradle";
 
   @Override
   public String getClassPath() {

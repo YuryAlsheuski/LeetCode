@@ -2,7 +2,7 @@ package com.alsheuski.reflection.result.visitor;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 
-import com.alsheuski.reflection.result.TypeResolver;
+import com.alsheuski.reflection.result.resolver.TypeResolver;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
