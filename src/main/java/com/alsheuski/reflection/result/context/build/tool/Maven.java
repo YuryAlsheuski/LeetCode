@@ -1,6 +1,7 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
+
 import java.io.IOException;
 import java.nio.file.Path;
 

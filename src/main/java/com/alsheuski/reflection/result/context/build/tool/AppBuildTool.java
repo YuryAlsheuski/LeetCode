@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
@@ -39,7 +40,7 @@ public abstract class AppBuildTool {
 
   public String resolveClasspath(GlobalContext context) {
     try {
-      return context.getRootClassPath() + ":" + resolve(context);
+      return context.getRootClassPath() + File.pathSeparator + resolve(context);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

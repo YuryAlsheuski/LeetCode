@@ -1,13 +1,18 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+
+import static java.util.stream.Collectors.toSet;
 
 public class Gradle extends AppBuildTool {
+
+  private static final String DELIMITER = File.pathSeparator;
 
   Gradle(Path projectRootDir) {
     super(projectRootDir);
@@ -17,13 +22,9 @@ public class Gradle extends AppBuildTool {
   @Override
   protected String resolve(GlobalContext context) throws IOException {
     var scriptFile = createClasspathTask(context.getWorkDirectory());
-    try(var reader = runCommands("./gradlew", "-I", scriptFile.toString(), "printClasspath")){
-      var lines = reader.lines().collect(Collectors.toList());
-      for (String line : lines) {
-        System.err.println(line);
-      }
-
-      return "";
+    var gradlew = context.getProjectRootDir().resolve("gradlew.bat").toString();
+    try (var reader = runCommands(gradlew, "-I", scriptFile.toString(), "printClasspath")) {
+      return String.join(DELIMITER, reader.lines().filter(line -> line.contains(DELIMITER)).flatMap(line -> Arrays.stream(line.split(DELIMITER))).collect(toSet()));
     }
   }
 
