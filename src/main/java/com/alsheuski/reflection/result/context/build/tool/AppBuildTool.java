@@ -38,7 +38,11 @@ public abstract class AppBuildTool {
   }
 
   public String resolveClasspath(GlobalContext context) {
-    return context.getRootClassPath() + ":" + resolve(context);
+    try {
+      return context.getRootClassPath() + ":" + resolve(context);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public Path getProjectRootDir() {
