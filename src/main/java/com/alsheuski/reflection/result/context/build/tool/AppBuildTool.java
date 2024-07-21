@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ public abstract class AppBuildTool {
     return projectRootDir;
   }
 
-  protected abstract String resolve(GlobalContext context);
+  protected abstract String resolve(GlobalContext context) throws IOException;
 
   public static AppBuildTool getInstance(Path rootClassPath) {
     if (INSTANCE == null) {

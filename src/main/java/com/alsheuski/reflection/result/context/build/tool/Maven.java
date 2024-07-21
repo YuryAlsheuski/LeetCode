@@ -11,7 +11,7 @@ public class Maven extends AppBuildTool {
   }
 
   @Override
-  protected String resolve(GlobalContext context) {
+  protected String resolve(GlobalContext context) throws IOException {
     var path = context.getBuildToolHome();
     try (var reader =
         runCommands(
@@ -19,17 +19,12 @@ public class Maven extends AppBuildTool {
             "dependency:build-classpath",
             "-DincludeScope=runtime")) {
 
-      String line;
-
-      while ((line = reader.readLine()) != null) {
-        if (line.startsWith("[")) {
-          continue;
-        }
-        return line.trim();
-      }
-    } catch (IOException e) {
-
+      return reader
+          .lines()
+          .filter(line -> !line.trim().isEmpty())
+          .filter(line -> !line.startsWith("["))
+          .findFirst()
+          .orElse(null);
     }
-    return null;
   }
 }
