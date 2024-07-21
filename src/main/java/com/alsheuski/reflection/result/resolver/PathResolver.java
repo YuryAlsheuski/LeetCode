@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 public class PathResolver {
   private PathResolver() {}
 
-  public static Path resolvePath(String path, String... parts) {
+  public static Path resolve(String path, String... parts) {
     var systemIndependentPath = path.replace("\\", File.separator).replace("/", File.separator);
     return Paths.get(systemIndependentPath, parts).toAbsolutePath().normalize();
   }

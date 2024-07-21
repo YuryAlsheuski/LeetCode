@@ -16,8 +16,8 @@ public class SourceClassPreprocessor {
 
   public static void simplifyTypes(String pathToJavaFile, String outputDir, String classpath)
       throws IOException {
-    pathToJavaFile = PathResolver.resolvePath(pathToJavaFile).toString();
-    outputDir = PathResolver.resolvePath(outputDir).toString();
+    pathToJavaFile = PathResolver.resolve(pathToJavaFile).toString();
+    outputDir = PathResolver.resolve(outputDir).toString();
 
     String output = new VarReplacer().replaceTypesToVar(pathToJavaFile);
     writeToFile(pathToJavaFile, output);
