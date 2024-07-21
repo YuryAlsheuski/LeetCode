@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class Common {
 
   public Common() {
-    var parent = new GenericChild();
+    GenericParent parent = new GenericChild();
     parent.getParentGenericArr(null,null);
     
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);

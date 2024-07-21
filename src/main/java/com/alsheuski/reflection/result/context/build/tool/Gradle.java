@@ -1,14 +1,13 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
-import com.alsheuski.reflection.result.context.GlobalContext;
+import static java.util.stream.Collectors.toSet;
 
+import com.alsheuski.reflection.result.context.GlobalContext;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
-
-import static java.util.stream.Collectors.toSet;
 
 public class Gradle extends AppBuildTool {
 
@@ -31,7 +30,7 @@ public class Gradle extends AppBuildTool {
   // todo here and for other places needs to handle errors correctly
   // todo copy file with content from resources in the future
   private File createClasspathTask(Path workDir) {
-    var scriptFile = new File(workDir.toFile(), "init.gradle");
+    var scriptFile = workDir.resolve("init.gradle").toFile();
     try (var myWriter = new FileWriter(scriptFile)) {
       scriptFile.createNewFile();
       myWriter.write(

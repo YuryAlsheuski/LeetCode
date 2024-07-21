@@ -20,6 +20,7 @@ public class GlobalContext {
     this.workDirectory = PathResolver.resolve(workDirectory);
     buildTool = AppBuildTool.getInstance(this.rootClassPath);
     projectRootDir = buildTool.getProjectRootDir();
+    createDirs();
   }
 
   public Path getRootClassPath() {
@@ -44,5 +45,12 @@ public class GlobalContext {
 
   public String getProjectClassPath() {
     return buildTool.resolveClasspath(this);
+  }
+
+  private void createDirs(){
+    var workDirFolder = workDirectory.toFile();
+    if (!workDirFolder.exists()) {
+      workDirFolder.mkdir();
+    }
   }
 }

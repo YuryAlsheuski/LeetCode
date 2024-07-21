@@ -2,9 +2,9 @@ package com.alsheuski.reflection.result.preprocessor;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.resolver.PathResolver;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 public class SourceClassPreprocessor {
@@ -17,22 +17,26 @@ public class SourceClassPreprocessor {
 
   public static void simplifyTypes(String pathToJavaFile, GlobalContext context)
       throws IOException {
-    pathToJavaFile = PathResolver.resolve(pathToJavaFile).toString();
 
-    String output = new VarReplacer().replaceTypesToVar(pathToJavaFile);
-    writeToFile(pathToJavaFile, output);
+    var javaFilePath = PathResolver.resolve(pathToJavaFile);
+    var content = new VarReplacer().replaceTypesToVar(javaFilePath.toString());
+    var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
+
+    writeToFile(newJavaFilePath.toFile(), content);
     recompile(pathToJavaFile, context.getWorkDirectory().toString(), context.getProjectClassPath());
   }
 
-  private static void writeToFile(String pathToJavaFile, String content) throws IOException {
-    FileWriter writer = new FileWriter(pathToJavaFile);
+  private static void writeToFile(File file, String content) throws IOException {
+    if (!file.exists()) {
+      file.createNewFile();
+    }
+    var writer = new FileWriter(file);
     writer.write(content);
     writer.close();
   }
 
   private static boolean recompile(String sourceFilePath, String outputDir, String classpath) {
-    // Get the system Java compiler
-    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+    var compiler = ToolProvider.getSystemJavaCompiler();
 
     if (compiler == null) {
       System.err.println("No Java compiler available. Make sure you're using a JDK, not a JRE.");
@@ -40,10 +44,10 @@ public class SourceClassPreprocessor {
     }
 
     // Create the compilation options and source files list
-    String[] options = {"-d", outputDir, "-classpath", classpath, sourceFilePath};
+    var options = new String[] {"-d", outputDir, "-classpath", classpath, sourceFilePath};
 
     // Compile the file
-    int compilationResult = compiler.run(null, null, null, options);
+    var compilationResult = compiler.run(null, null, null, options);
 
     return compilationResult == 0;
   }

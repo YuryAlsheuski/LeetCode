@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) throws IOException {
-    String workingDir = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode";
+    String workingDir = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/work";
     String rootClassPath = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/target/classes";
     String buildToolHome = "/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin";
     GlobalContext gContext = new GlobalContext(workingDir, rootClassPath, buildToolHome);
