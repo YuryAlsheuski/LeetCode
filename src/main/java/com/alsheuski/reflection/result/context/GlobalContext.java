@@ -10,7 +10,9 @@ public class GlobalContext {
   private final AppBuildTool buildTool;
   private final Path projectRootDir;
   private final Path buildToolHome; // todo detect automatically in the future
-  private final Path workDirectory; // todo set it automatically like temp folder hardcode;
+  private final Path
+      workDirectory; // todo set it automatically like temp folder hardcode and remove like auto
+                     // closeable;
 
   public GlobalContext(String workDirectory, String rootClassPath, String buildToolHome) {
     this.rootClassPath = PathResolver.resolve(rootClassPath);

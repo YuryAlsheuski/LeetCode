@@ -1,5 +1,6 @@
 package com.alsheuski.reflection.result.preprocessor;
 
+import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.resolver.PathResolver;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,14 +15,13 @@ public class SourceClassPreprocessor {
     return "";
   }
 
-  public static void simplifyTypes(String pathToJavaFile, String outputDir, String classpath)
+  public static void simplifyTypes(String pathToJavaFile, GlobalContext context)
       throws IOException {
     pathToJavaFile = PathResolver.resolve(pathToJavaFile).toString();
-    outputDir = PathResolver.resolve(outputDir).toString();
 
     String output = new VarReplacer().replaceTypesToVar(pathToJavaFile);
     writeToFile(pathToJavaFile, output);
-    recompile(pathToJavaFile, outputDir, classpath);
+    recompile(pathToJavaFile, context.getWorkDirectory().toString(), context.getProjectClassPath());
   }
 
   private static void writeToFile(String pathToJavaFile, String content) throws IOException {
