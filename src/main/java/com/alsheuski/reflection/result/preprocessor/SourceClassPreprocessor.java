@@ -23,7 +23,7 @@ public class SourceClassPreprocessor {
     var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
 
     writeToFile(newJavaFilePath.toFile(), content);
-    recompile(pathToJavaFile, context.getWorkDirectory().toString(), context.getProjectClassPath());
+    recompile(newJavaFilePath.toString(), context.getWorkDirectory().toString(), context.getProjectClassPath());
   }
 
   private static void writeToFile(File file, String content) throws IOException {

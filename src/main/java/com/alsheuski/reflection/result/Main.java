@@ -1,6 +1,6 @@
 package com.alsheuski.reflection.result;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.getLinkedWith;
+import static com.alsheuski.reflection.result.util.LoaderUtil.buildClassesMetadata;
 
 import com.alsheuski.reflection.result.config.ClassVisitorConfig;
 import com.alsheuski.reflection.result.config.ConfigManager;
@@ -32,7 +32,7 @@ public class Main {
         new ClassStructureVisitor(root, configManager, allowedClassPaths, 2)
             .getAllDeps(new ClassLoadingContext(className, false));
 
-    System.err.println(getLinkedWith(className, new ArrayList<>(result.values())));
+    System.err.println(buildClassesMetadata(className, new ArrayList<>(result.values())));
   }
   // todo check methods overriding
 }
