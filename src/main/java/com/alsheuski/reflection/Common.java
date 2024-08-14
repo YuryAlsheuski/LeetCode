@@ -1,10 +1,18 @@
 package com.alsheuski.reflection;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Common {
 
+  public void tett(String param1, String param2){
+    System.err.println("erer");
+  }
   public Common() {
-    GenericParent parent = new GenericChild();
+    List<String> ff = new ArrayList<>();
+    System.err.println(ff);
+    var parent = new GenericChild();
     parent.get(null);
   /*  parent.getParentGenericArr(null,null);
     

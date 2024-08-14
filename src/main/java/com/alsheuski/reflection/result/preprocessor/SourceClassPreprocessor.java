@@ -23,7 +23,10 @@ public class SourceClassPreprocessor {
     var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
 
     writeToFile(newJavaFilePath.toFile(), content);
-    recompile(newJavaFilePath.toString(), context.getWorkDirectory().toString(), context.getProjectClassPath());
+    recompile(
+        newJavaFilePath.toString(),
+        context.getWorkDirectory().toString(),
+        context.getProjectClassPath());
   }
 
   private static void writeToFile(File file, String content) throws IOException {
@@ -44,7 +47,7 @@ public class SourceClassPreprocessor {
     }
 
     // Create the compilation options and source files list
-    var options = new String[] {"-d", outputDir, "-classpath", classpath, sourceFilePath};
+    var options = new String[] {"-d", outputDir, "-classpath", classpath, "-g", sourceFilePath};
 
     // Compile the file
     var compilationResult = compiler.run(null, null, null, options);
