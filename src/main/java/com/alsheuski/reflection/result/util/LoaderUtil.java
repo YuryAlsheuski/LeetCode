@@ -218,7 +218,7 @@ public class LoaderUtil {
     sb.append("\n");
   }
 
-  public static String printLinkedWith(
+  public static String getLinkedWith(
       String classFullName,
       List<MetaClass> classes) { // todo refactor this class - it is pretty complicated
 
