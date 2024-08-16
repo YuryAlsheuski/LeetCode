@@ -56,19 +56,15 @@ public class VarReplacer {
       public boolean visit(VariableDeclarationStatement node) {
         if (canBeReplacedWithVar(node)) {
           AST ast = node.getAST();
-          VariableDeclarationFragment fragment =
-              (VariableDeclarationFragment) node.fragments().get(0);
           node.setType(ast.newSimpleType(ast.newSimpleName("var")));
         }
         return super.visit(node);
       }
 
       private boolean canBeReplacedWithVar(VariableDeclarationStatement node) {
-        // Check if the variable declaration can be replaced with 'var'
         if (node.fragments().size() != 1) {
-          return false; // multiple variables declared in one statement
+          return false;
         }
-
         VariableDeclarationFragment fragment =
             (VariableDeclarationFragment) node.fragments().get(0);
         Expression initializer = fragment.getInitializer();
@@ -84,7 +80,6 @@ public class VarReplacer {
           return false;
         }
 
-        // Replace if the type is explicit and not inferred from null
         return true;
       }
     };
@@ -93,7 +88,7 @@ public class VarReplacer {
   private String readFileToString(String filePath) throws IOException {
     BufferedReader reader = new BufferedReader(new FileReader(filePath));
     StringBuilder stringBuilder = new StringBuilder();
-    String line = null;
+    String line;
     while ((line = reader.readLine()) != null) {
       stringBuilder.append(line).append("\n");
     }

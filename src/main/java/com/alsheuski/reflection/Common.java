@@ -5,15 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Common {
-
-  public void tett(String param1, String param2){
-    System.err.println("erer");
-  }
   public Common() {
     List<String> ff = new ArrayList<>();
+    GenericParent<?,?,?> ppa = new GenericChild();
+    System.err.println(ppa);
     System.err.println(ff);
-    var parent = new GenericChild();
-    parent.get(null);
+   GenericParent parent = new GenericChild();
+   parent.get(null);
   /*  parent.getParentGenericArr(null,null);
     
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);

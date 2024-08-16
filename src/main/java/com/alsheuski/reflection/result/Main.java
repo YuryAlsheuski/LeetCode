@@ -7,7 +7,7 @@ import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.preprocessor.SourceClassPreprocessor;
-import com.alsheuski.reflection.result.visitor.ClassStructureVisitor;
+import com.alsheuski.reflection.result.visitor.ClassDepsVisitor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -25,11 +25,12 @@ public class Main {
     var className = "com/alsheuski/reflection/Common";
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");
 
-    var configManager = new ConfigManager();
-    configManager.addConfig(new ClassVisitorConfig(className, i -> true));
+    var configManager =
+        new ConfigManager(allowedClassPaths)
+            .addConfig(new ClassVisitorConfig(className, i -> true));
 
     var result =
-        new ClassStructureVisitor(root, configManager, allowedClassPaths, 2)
+        new ClassDepsVisitor(root, configManager, 2)
             .getAllDeps(new ClassLoadingContext(className, false));
 
     System.err.println(buildClassesMetadata(className, new ArrayList<>(result.values())));

@@ -5,12 +5,12 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ASM9;
 
-import com.alsheuski.reflection.result.resolver.TypeResolver;
 import com.alsheuski.reflection.result.config.ConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
+import com.alsheuski.reflection.result.resolver.TypeResolver;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -20,7 +20,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
-public class ClassStructureVisitor {
+public class ClassDepsVisitor {
 
   private final Predicate<String> classPathFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
@@ -31,17 +31,12 @@ public class ClassStructureVisitor {
   private ClassLoadingQueue nextLevelQueue;
   private ClassLoadingContext rootClassLoadingContext;
 
-  public ClassStructureVisitor(
-      String rootClassPath,
-      ConfigManager configManager,
-      Predicate<String> classPathFilter,
-      int deep) {
+  public ClassDepsVisitor(String rootClassPath, ConfigManager configManager, int deep) {
 
     this.rootClassPath = rootClassPath;
     this.configManager = configManager;
-    this.classPathFilter = classPathFilter;
     this.deep = deep;
-
+    classPathFilter = configManager.getAllowedClassPaths();
     classNameToMetaClass = new HashMap<>();
     currentLevelClasses = new HashSet<>();
     nextLevelQueue = new ClassLoadingQueue(classPathFilter);
@@ -131,7 +126,7 @@ public class ClassStructureVisitor {
 
         var hasValidParent = classPathFilter.test(superName);
         if (hasValidParent) {
-          ClassStructureVisitor.this.visit(new ClassLoadingContext(superName, context));
+          ClassDepsVisitor.this.visit(new ClassLoadingContext(superName, context));
         }
       }
 
@@ -148,7 +143,7 @@ public class ClassStructureVisitor {
           return null;
         }
         var method = getMethod(access, name, descriptor, signature);
-        return new MethodStructureVisitor(typeResolver, nextLevelQueue, context, method);
+        return new MethodDepsVisitor(typeResolver, nextLevelQueue, context, method);
       }
 
       @Override
@@ -161,8 +156,8 @@ public class ClassStructureVisitor {
 
       private Method getMethod(int access, String name, String descriptor, String signature) {
         var currentClass = context.getCurrentClass();
-        var constructor = isConstructor(name);
-        var methodName = constructor ? currentClass.getName() : name;
+        var isConstructor = isConstructor(name);
+        var methodName = isConstructor ? currentClass.getName() : name;
         var type = typeResolver.getMethodReturnType(descriptor, signature);
         var method =
             currentClass
@@ -172,7 +167,7 @@ public class ClassStructureVisitor {
                       existed.setReturnType(type);
                       return existed;
                     })
-                .orElse(new Method(access, descriptor, type, methodName, constructor));
+                .orElse(new Method(access, descriptor, type, methodName, isConstructor));
         currentClass.addMethod(method);
 
         return method;

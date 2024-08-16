@@ -2,25 +2,26 @@ package com.alsheuski.reflection.result.visitor;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
 
-import com.alsheuski.reflection.result.resolver.TypeResolver;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.Method;
+import com.alsheuski.reflection.result.resolver.TypeResolver;
 import java.util.Arrays;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
-public class MethodStructureVisitor extends MethodVisitor {
+// todo IMPORTANT works fine but try to migrate to MethodNode
+public class MethodDepsVisitor extends MethodVisitor {
 
   private final ClassLoadingQueue nextLevelQueue;
   private final ClassLoadingContext context;
   private final Method currentMethod;
   private final TypeResolver typeResolver;
 
-  public MethodStructureVisitor(
+  public MethodDepsVisitor(
       TypeResolver typeResolver,
       ClassLoadingQueue nextLevelQueue,
       ClassLoadingContext context,
