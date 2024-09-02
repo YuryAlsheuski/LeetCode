@@ -3,14 +3,12 @@ package com.alsheuski.reflection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.commons.collections4.map.MultiKeyMap;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 public class LocalVariableTypePrinter {
-
-  private static final Map<Integer, String> rowNumberToType = new HashMap<>();
+  private static final MultiKeyMap<String, String> rowNumberToType = new MultiKeyMap<>();
 
   public static void main(String[] args) throws IOException {
     var classBytes =
@@ -38,7 +36,8 @@ public class LocalVariableTypePrinter {
                 var node = (LabelNode) start.info;
                 var rowNumber = getRowNumber(node);
 
-                rowNumberToType.put(rowNumber, signature != null ? signature : desc);
+                rowNumberToType.put(
+                    String.valueOf(rowNumber), name, signature != null ? signature : desc);
               }
 
               // for local variables definition in one row like: var a = 1;var b = 2;
