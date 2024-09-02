@@ -3,11 +3,14 @@ package com.alsheuski.reflection;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 public class LocalVariableTypePrinter {
+
+  private static final Map<Integer, String> rowNumberToType = new HashMap<>();
 
   public static void main(String[] args) throws IOException {
     var classBytes =
@@ -16,29 +19,41 @@ public class LocalVariableTypePrinter {
                 "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/work/com/alsheuski/reflection/Common.class"));
     var classReader = new ClassReader(classBytes);
     // Accept the class and visit its contents with our custom visitor
-    classReader.accept(new ClassVisitor(Opcodes.ASM9) {
+    classReader.accept(
+        new ClassVisitor(Opcodes.ASM9) {
 
-      @Override
-      public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-        // Only visit the method we're interested in
-          return new MethodNode(Opcodes.ASM9, access, name, descriptor, signature, exceptions) {
-            @Override
-            public void visitEnd() {
-              super.visitEnd();
+          @Override
+          public MethodVisitor visitMethod(
+              int access, String name, String descriptor, String signature, String[] exceptions) {
+            // Only visit the method we're interested in
+            return new MethodNode(Opcodes.ASM9, access, name, descriptor, signature, exceptions) {
+              @Override
+              public void visitLocalVariable(
+                  String name, String desc, String signature, Label start, Label end, int index) {
 
-              // Iterate over the local variables
-              List<LocalVariableNode> localVariables = this.localVariables;
-              for (LocalVariableNode localVar : localVariables) {
-                if (localVar.index != 0) { // Exclude 'this' reference for non-static methods
-                  String typeDesc = localVar.desc;
-                  String type = Type.getType(typeDesc).getClassName();
-                  System.out.println(type);
+                if ("this".equals(name)) {
+                  return;
                 }
-              }
-            }
-          };
-        }
 
-    }, 0);
+                var node = (LabelNode) start.info;
+                var rowNumber = getRowNumber(node);
+
+                rowNumberToType.put(rowNumber, signature != null ? signature : desc);
+              }
+
+              // for local variables definition in one row like: var a = 1;var b = 2;
+              private int getRowNumber(AbstractInsnNode node) {
+                var lineNode = node.getNext();
+                if (lineNode instanceof LineNumberNode) {
+                  return ((LineNumberNode) lineNode).line - 1;
+                }
+                return getRowNumber(lineNode);
+              }
+            };
+          }
+        },
+        0);
+
+    System.err.println(rowNumberToType);
   }
 }

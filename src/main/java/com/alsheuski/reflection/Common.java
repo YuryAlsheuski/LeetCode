@@ -6,8 +6,7 @@ import java.util.List;
 
 public class Common {
   public Common() {
-    List<String> ff = new ArrayList<>();
-    GenericParent<?,?,?> ppa = new GenericChild();
+    List<String> ff = new ArrayList<>();GenericParent<?,?,?> ppa = new GenericChild();
     System.err.println(ppa);
     System.err.println(ff);
    GenericParent parent = new GenericChild();
