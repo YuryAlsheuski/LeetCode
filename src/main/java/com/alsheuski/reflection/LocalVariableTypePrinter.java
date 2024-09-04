@@ -8,6 +8,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 public class LocalVariableTypePrinter {
+
   private static final MultiKeyMap<String, String> rowNumberToType = new MultiKeyMap<>();
 
   public static void main(String[] args) throws IOException {

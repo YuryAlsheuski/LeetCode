@@ -108,6 +108,9 @@ public class ClassDepsVisitor {
   }
 
   private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
+    // todo try to migrate to ClassNode after migration to any custom MethodNode. We need to process
+    // whole class once and
+    // then parse results
     return new ClassVisitor(ASM9) {
 
       private final TypeResolver typeResolver = new TypeResolver();
