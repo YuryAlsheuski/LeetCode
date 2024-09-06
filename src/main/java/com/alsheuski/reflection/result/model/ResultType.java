@@ -19,7 +19,7 @@ public class ResultType {
     if (genericType == null || genericType.isEmpty()) {
       throw new IllegalArgumentException("genericType is null or empty");
     }
-    this.genericType = genericType.replace(";", "");
+    this.genericType = genericType;
   }
 
   public String printClassName(Function<String, String> printer) {

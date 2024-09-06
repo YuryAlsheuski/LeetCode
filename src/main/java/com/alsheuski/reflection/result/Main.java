@@ -1,8 +1,10 @@
 package com.alsheuski.reflection.result;
 
+
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.preprocessor.SourceClassPreprocessor;
 import com.alsheuski.reflection.result.util.CompilerUtil;
+
 import java.io.IOException;
 
 public class Main {

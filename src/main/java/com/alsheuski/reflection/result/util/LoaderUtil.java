@@ -96,16 +96,16 @@ public class LoaderUtil {
     var delimiter1 = "/";
     var delimiter2 = ".";
     var resultDelimiter = "";
-
-    if (classFullName.contains(delimiter1)) {
+    var cn = classFullName.replace(";", "");
+    if (cn.contains(delimiter1)) {
       resultDelimiter = delimiter1;
-    } else if (classFullName.contains(delimiter2)) {
+    } else if (cn.contains(delimiter2)) {
       resultDelimiter = "\\" + delimiter2;
     } else {
-      return classFullName;
+      return cn;
     }
 
-    var nameParts = classFullName.split(resultDelimiter);
+    var nameParts = cn.split(resultDelimiter);
     return nameParts[nameParts.length - 1];
   }
 

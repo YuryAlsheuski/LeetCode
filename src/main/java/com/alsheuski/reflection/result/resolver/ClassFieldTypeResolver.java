@@ -16,7 +16,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
-public class TypeResolver {
+public class ClassFieldTypeResolver {
 
   private final Map<String, String> formalToConcreteSignature = new HashMap<>(3);
 

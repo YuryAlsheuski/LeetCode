@@ -64,14 +64,14 @@ public class SourceClassPreprocessor {
 
     loadClass(pathToCompiledClass, visitor);
 
-    return new TypeReplacer().replaceVarTypes(pathToJavaFile, rowNumberAndNameToType);
+    return new JavaFileTypeReplacer().replaceVarTypes(pathToJavaFile, rowNumberAndNameToType);
   }
 
   public static Path simplifyJavaFileTypes(String pathToJavaFile, GlobalContext context)
       throws IOException {
 
     var javaFilePath = PathResolver.resolve(pathToJavaFile);
-    var content = new TypeReplacer().replaceTypesToVar(javaFilePath.toString());
+    var content = new JavaFileTypeReplacer().replaceTypesToVar(javaFilePath.toString());
     var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
     writeToFile(newJavaFilePath.toFile(), content);
 

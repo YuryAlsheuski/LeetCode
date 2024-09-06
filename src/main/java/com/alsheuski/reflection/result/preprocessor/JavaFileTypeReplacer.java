@@ -6,7 +6,7 @@ import static org.eclipse.jdt.core.dom.ASTParser.K_COMPILATION_UNIT;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
+import java.util.ArrayList;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -14,7 +14,6 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.LambdaExpression;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.ParameterizedType;
@@ -23,10 +22,9 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jface.text.Document;
-import org.eclipse.text.edits.TextEdit;
 
 // todo refactor this class!
-public class TypeReplacer {
+public class JavaFileTypeReplacer {
 
   public String replaceVarTypes(
       String pathToJavaFile, MultiKeyMap<String, String> rowNumberAndNameToType)
@@ -46,7 +44,7 @@ public class TypeReplacer {
         new ASTVisitor() {
           @Override
           public boolean visit(VariableDeclarationStatement node) {
-            int lineNumber = cu.getLineNumber(node.getStartPosition());
+            var lineNumber = cu.getLineNumber(node.getStartPosition());
             var fieldName =
                 node.fragments().stream()
                     .findFirst()
@@ -60,7 +58,11 @@ public class TypeReplacer {
               Type realType;
               var primitiveTypeCode = PrimitiveType.toCode(type);
               if (primitiveTypeCode == null) {
-                realType = ast.newSimpleType(ast.newName(type));
+                if (type.contains("<")) {
+                  realType = createParameterizedType(ast, type);
+                } else {
+                  realType = ast.newSimpleType(ast.newName(type));
+                }
               } else {
                 realType = ast.newPrimitiveType(primitiveTypeCode);
               }
@@ -69,10 +71,54 @@ public class TypeReplacer {
             }
             return super.visit(node);
           }
-        });
 
-    Document document = new Document(sourceCode);
-    TextEdit edits = cu.rewrite(document, null);
+          private ParameterizedType createParameterizedType(AST ast, String type) {
+            var indexOfGenerics = type.indexOf("<");
+            var rawTypeName = type.substring(0, indexOfGenerics).trim();
+            var genericArgs = type.substring(indexOfGenerics + 1, type.lastIndexOf(">")).trim();
+
+            var rawType = ast.newSimpleType(ast.newName(rawTypeName));
+
+            var parameterizedType = ast.newParameterizedType(rawType);
+
+            var typeArguments = splitTypeArguments(genericArgs);
+
+            for (String arg : typeArguments) {
+              if (arg.contains("<")) {
+                parameterizedType.typeArguments().add(createParameterizedType(ast, arg));
+              } else {
+                parameterizedType.typeArguments().add(ast.newSimpleType(ast.newName(arg.trim())));
+              }
+            }
+
+            return parameterizedType;
+          }
+
+          private String[] splitTypeArguments(String typeArguments) {
+            var result = new ArrayList<String>();
+            var balance = 0;
+            var currentArgument = new StringBuilder();
+
+            for (char ch : typeArguments.toCharArray()) {
+              if (ch == '<') {
+                balance++;
+              } else if (ch == '>') {
+                balance--;
+              } else if (ch == ',' && balance == 0) {
+                result.add(currentArgument.toString().trim());
+                currentArgument.setLength(0);
+                continue;
+              }
+              currentArgument.append(ch);
+            }
+
+            result.add(currentArgument.toString().trim());
+
+            return result.toArray(new String[0]);
+          }
+        });
+    var document = new Document(sourceCode);
+    var edits = cu.rewrite(document, null);
     try {
       edits.apply(document);
     } catch (Exception e) {
@@ -83,23 +129,23 @@ public class TypeReplacer {
   }
 
   public String replaceTypesToVar(String pathToJavaFile) throws IOException {
-    String source = readFileToString(pathToJavaFile);
+    var source = readFileToString(pathToJavaFile);
 
-    ASTParser parser = ASTParser.newParser(JLS21);
+    var parser = ASTParser.newParser(JLS21);
     parser.setSource(source.toCharArray());
     parser.setKind(K_COMPILATION_UNIT);
     parser.setResolveBindings(true);
 
-    Map<String, String> options = JavaCore.getOptions();
+    var options = JavaCore.getOptions();
     parser.setCompilerOptions(options);
 
-    CompilationUnit compilationUnit = (CompilationUnit) parser.createAST(null);
+    var compilationUnit = (CompilationUnit) parser.createAST(null);
     compilationUnit.recordModifications();
 
     compilationUnit.accept(getVisitor());
 
-    Document document = new Document(source);
-    TextEdit edits = compilationUnit.rewrite(document, options);
+    var document = new Document(source);
+    var edits = compilationUnit.rewrite(document, options);
     try {
       edits.apply(document);
     } catch (Exception e) {
@@ -113,7 +159,7 @@ public class TypeReplacer {
       @Override
       public boolean visit(VariableDeclarationStatement node) {
         if (canBeReplacedWithVar(node)) {
-          AST ast = node.getAST();
+          var ast = node.getAST();
           node.setType(ast.newSimpleType(ast.newSimpleName("var")));
         }
         return super.visit(node);
@@ -123,9 +169,8 @@ public class TypeReplacer {
         if (node.fragments().size() != 1) {
           return false;
         }
-        VariableDeclarationFragment fragment =
-            (VariableDeclarationFragment) node.fragments().get(0);
-        Expression initializer = fragment.getInitializer();
+        var fragment = (VariableDeclarationFragment) node.fragments().get(0);
+        var initializer = fragment.getInitializer();
 
         if (initializer == null
             || initializer instanceof NullLiteral
@@ -144,9 +189,9 @@ public class TypeReplacer {
   }
 
   private String readFileToString(String filePath) throws IOException {
-    BufferedReader reader = new BufferedReader(new FileReader(filePath));
-    StringBuilder stringBuilder = new StringBuilder();
-    String line;
+    var reader = new BufferedReader(new FileReader(filePath));
+    var stringBuilder = new StringBuilder();
+    var line = "";
     while ((line = reader.readLine()) != null) {
       stringBuilder.append(line).append("\n");
     }

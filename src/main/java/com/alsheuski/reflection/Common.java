@@ -3,6 +3,8 @@ package com.alsheuski.reflection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Common {
   public Common() {
@@ -11,7 +13,7 @@ public class Common {
     System.err.println(ff);
    GenericParent parent = new GenericChild();
    parent.get(null);
-  /*  parent.getParentGenericArr(null,null);
+    parent.getParentGenericArr(null,null);
     
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
@@ -31,9 +33,9 @@ public class Common {
     var pp = new GenericChild();
     var b = 0;
     var s = 0;
-    pp.primitivesTest(null);*/
+    pp.primitivesTest(null);
   }
-/*
+
   public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
@@ -64,5 +66,5 @@ public class Common {
     public GenericParent<?, ?, ?> get() {
       return new GenericChild();
     }
-  }*/
+  }
 }
