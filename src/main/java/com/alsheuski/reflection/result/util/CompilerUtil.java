@@ -12,29 +12,27 @@ public class CompilerUtil {
   public static Path compile(String sourceFilePath, String outputDir, String classpath)
       throws IOException {
 
-    var success = doCompile(sourceFilePath, outputDir, classpath);
-    if (!success) {
-      return null;
-    }
+    doCompile(sourceFilePath, outputDir, classpath);
 
     var classPath = getClassName(sourceFilePath);
 
     return Paths.get(outputDir, classPath + ".class");
   }
 
-  private static boolean doCompile(String sourceFilePath, String outputDir, String classpath) {
+  private static void doCompile(String sourceFilePath, String outputDir, String classpath) {
     var compiler = ToolProvider.getSystemJavaCompiler();
 
     if (compiler == null) {
-      System.err.println("No Java compiler available. Make sure you're using a JDK, not a JRE.");
-      return false;
+      throw new RuntimeException(
+          "No Java compiler available. Make sure you're using a JDK, not a JRE.");
     }
 
     var options = new String[] {"-d", outputDir, "-classpath", classpath, "-g", sourceFilePath};
 
     var compilationResult = compiler.run(null, null, null, options);
-
-    return compilationResult == 0;
+    if (compilationResult != 0) {
+      throw new RuntimeException("Compilation failed.");
+    }
   }
 
   private static String getClassName(String sourceFilePath) throws IOException {

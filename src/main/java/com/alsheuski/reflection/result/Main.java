@@ -21,7 +21,10 @@ public class Main {
             gContext.getWorkDirectory().toString(),
             gContext.getProjectClassPath());
 
-    System.err.println(newClassFile);
+    var noVarTypesContent =
+        SourceClassPreprocessor.removeVarTypes(newJavaFile.toString(), newClassFile.toString());
+
+    System.err.println(noVarTypesContent);
 
     /* var root = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/target/classes/";
     var className = "com/alsheuski/reflection/Common";
