@@ -1,6 +1,5 @@
 package com.alsheuski.reflection;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -8,13 +7,14 @@ import java.util.stream.Collectors;
 
 public class Common {
   public Common() {
-    List<String> ff = new ArrayList<>();GenericParent<?,?,?> ppa = new GenericChild();
+    List<String> ff = new ArrayList<>();
+    GenericParent<?, ?, ?> ppa = new GenericChild();
     System.err.println(ppa);
     System.err.println(ff);
-   GenericParent parent = new GenericChild();
-   parent.get(null);
-    parent.getParentGenericArr(null,null);
-    
+    GenericParent parent = new GenericChild();
+    parent.get(null);
+    parent.getParentGenericArr(null, null);
+
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
@@ -30,6 +30,8 @@ public class Common {
 
     new GenericChild().getParentGenericArr(null, null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null, null);
+    var primitive = new GenericParent<List<String>, ClassA, Map<String, Double>>().getPrimitive();
+
     var pp = new GenericChild();
     var b = 0;
     var s = 0;

@@ -14,6 +14,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LineNumberNode;
@@ -44,10 +45,11 @@ public class SourceClassPreprocessor {
 
                 var node = (LabelNode) start.info;
                 var rowNumber = getRowNumber(node);
-                var type = signature != null ? signature : desc;
+                var typeDescriptor = signature != null ? signature : desc;
+                var type = Type.getType(typeDescriptor);
 
                 rowNumberAndNameToType.put(
-                    String.valueOf(rowNumber), name, LoaderUtil.getClassName(type));
+                    String.valueOf(rowNumber), name, LoaderUtil.getClassName(type.getClassName()));
               }
 
               // for local variables definition in one row like: var a = 1;var b = 2;

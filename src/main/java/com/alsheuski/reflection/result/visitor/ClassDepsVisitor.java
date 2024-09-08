@@ -10,7 +10,7 @@ import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
-import com.alsheuski.reflection.result.resolver.ClassFieldTypeResolver;
+import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -113,7 +113,7 @@ public class ClassDepsVisitor {
     // then parse results
     return new ClassVisitor(ASM9) {
 
-      private final ClassFieldTypeResolver typeResolver = new ClassFieldTypeResolver();
+      private final ClassTypeResolver typeResolver = new ClassTypeResolver();
 
       @Override
       public void visit(

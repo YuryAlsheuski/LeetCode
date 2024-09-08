@@ -6,7 +6,7 @@ import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.Method;
-import com.alsheuski.reflection.result.resolver.ClassFieldTypeResolver;
+import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
 import java.util.Arrays;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
@@ -19,10 +19,10 @@ public class MethodDepsVisitor extends MethodVisitor {
   private final ClassLoadingQueue nextLevelQueue;
   private final ClassLoadingContext context;
   private final Method currentMethod;
-  private final ClassFieldTypeResolver typeResolver;
+  private final ClassTypeResolver typeResolver;
 
   public MethodDepsVisitor(
-      ClassFieldTypeResolver typeResolver,
+      ClassTypeResolver typeResolver,
       ClassLoadingQueue nextLevelQueue,
       ClassLoadingContext context,
       Method currentMethod) {

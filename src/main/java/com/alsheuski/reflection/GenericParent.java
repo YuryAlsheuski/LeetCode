@@ -22,6 +22,10 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return null;
   }
 
+  public int getPrimitive(){
+    return 0;
+  }
+
   public List<P> getParccdcdcentGenericArr(TTT incoming) {
     return null;
   }
