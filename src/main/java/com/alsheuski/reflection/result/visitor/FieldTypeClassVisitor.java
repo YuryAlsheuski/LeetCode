@@ -82,9 +82,10 @@ public class FieldTypeClassVisitor extends ClassVisitor {
         }
         var typeDescriptor = signature != null ? signature : desc;
         var type = Type.getType(typeDescriptor);
+        // for inner class types
+        var typeString = LoaderUtil.getClassName(type.getClassName()).replace("$", ".");
 
-        rowNumberAndNameToType.put(
-            String.valueOf(rowNumber), name, LoaderUtil.getClassName(type.getClassName()));
+        rowNumberAndNameToType.put(String.valueOf(rowNumber), name, typeString);
       }
 
       // for local variables definition in one row like: var a = 1;var b = 2;
