@@ -63,7 +63,7 @@ public class Common {
     }
   }
 
-  class ParentGetter {
+  private class ParentGetter {
 
     public GenericParent<?, ?, ?> get() {
       var test = new GenericChild();
