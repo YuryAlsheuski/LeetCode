@@ -19,6 +19,7 @@ public class FieldTypeClassVisitor extends ClassVisitor {
 
   private final String currentClassPath;
   private final MultiKeyMap<String, String> rowNumberAndNameToType;
+  private String className;
 
   public FieldTypeClassVisitor(String currentClassPath) {
     this(currentClassPath, new MultiKeyMap<>());
@@ -32,8 +33,23 @@ public class FieldTypeClassVisitor extends ClassVisitor {
   }
 
   @Override
+  public void visit(
+      int version,
+      int access,
+      String name,
+      String signature,
+      String superName,
+      String[] interfaces) {
+    className = name;
+    super.visit(version, access, name, signature, superName, interfaces);
+  }
+
+  @Override
   public void visitInnerClass(String name, String outerName, String innerName, int access) {
     if (access == 25) {
+      return;
+    }
+    if (!className.equals(outerName)) {
       return;
     }
     var rootFolder = Path.of(currentClassPath).getParent();
