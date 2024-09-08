@@ -6,15 +6,15 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Common {
-  public Common() {
-    List<String> ff = new ArrayList<>();
-    GenericParent<?, ?, ?> ppa = new GenericChild();
+  public Common(String test) {
+    var ppa = new GenericChild();List<String> ff = new ArrayList<>();
     System.err.println(ppa);
     System.err.println(ff);
     GenericParent parent = new GenericChild();
     parent.get(null);
     parent.getParentGenericArr(null, null);
 
+    test.length();
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
@@ -66,6 +66,7 @@ public class Common {
   class ParentGetter {
 
     public GenericParent<?, ?, ?> get() {
+      var test = new GenericChild();
       return new GenericChild();
     }
   }

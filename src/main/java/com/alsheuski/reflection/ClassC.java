@@ -6,7 +6,7 @@ public class ClassC {
   }
 
   protected void doNotCall() {
-    new Common();
+    new Common("drerf");
     new ClassB("");
     new ClassA().getLabel();
   }

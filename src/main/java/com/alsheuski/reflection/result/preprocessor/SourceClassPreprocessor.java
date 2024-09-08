@@ -45,6 +45,9 @@ public class SourceClassPreprocessor {
 
                 var node = (LabelNode) start.info;
                 var rowNumber = getRowNumber(node);
+                if (rowNumber == -1) {
+                  return;
+                }
                 var typeDescriptor = signature != null ? signature : desc;
                 var type = Type.getType(typeDescriptor);
 
@@ -54,9 +57,12 @@ public class SourceClassPreprocessor {
 
               // for local variables definition in one row like: var a = 1;var b = 2;
               private int getRowNumber(AbstractInsnNode node) {
-                var lineNode = node.getNext();
+                if (node == null) {
+                  return -1; // case when field is used without type link: field.toString();
+                }
+                var lineNode = node.getPrevious();
                 if (lineNode instanceof LineNumberNode) {
-                  return ((LineNumberNode) lineNode).line - 1;
+                  return ((LineNumberNode) lineNode).line;
                 }
                 return getRowNumber(lineNode);
               }
