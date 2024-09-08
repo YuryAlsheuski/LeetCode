@@ -20,9 +20,9 @@ import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public class SourceClassPreprocessor {
+public class JavaFilePreprocessor {
 
-  private SourceClassPreprocessor() {}
+  private JavaFilePreprocessor() {}
 
   // todo for future will be better to process class once
   public static String removeVarTypes(String pathToJavaFile, String pathToCompiledClass)

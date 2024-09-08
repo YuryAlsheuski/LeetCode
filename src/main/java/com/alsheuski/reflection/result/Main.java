@@ -2,7 +2,7 @@ package com.alsheuski.reflection.result;
 
 
 import com.alsheuski.reflection.result.context.GlobalContext;
-import com.alsheuski.reflection.result.preprocessor.SourceClassPreprocessor;
+import com.alsheuski.reflection.result.preprocessor.JavaFilePreprocessor;
 import com.alsheuski.reflection.result.util.CompilerUtil;
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ public class Main {
     String buildToolHome = "/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin";
     GlobalContext gContext = new GlobalContext(workingDir, rootClassPath, buildToolHome);
     var newJavaFile =
-        SourceClassPreprocessor.simplifyJavaFileTypes(
+        JavaFilePreprocessor.simplifyJavaFileTypes(
             "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/src/main/java/com/alsheuski/reflection/Common.java",
             gContext);
     var newClassFile =
@@ -23,7 +23,7 @@ public class Main {
             gContext.getProjectClassPath());
 
     var noVarTypesContent =
-        SourceClassPreprocessor.removeVarTypes(newJavaFile.toString(), newClassFile.toString());
+        JavaFilePreprocessor.removeVarTypes(newJavaFile.toString(), newClassFile.toString());
 
     System.err.println(noVarTypesContent);
 
