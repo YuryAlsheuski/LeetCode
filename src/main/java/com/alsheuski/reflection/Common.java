@@ -18,6 +18,11 @@ public class Common {
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
+    var result = List.of(1,2,3,4,5)
+            .stream()
+            .filter(i->i%2==0)
+            .collect(Collectors.toList());
+
     new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);

@@ -44,14 +44,14 @@ public class JavaFileTypeReplacer {
         new ASTVisitor() {
           @Override
           public boolean visit(VariableDeclarationStatement node) {
-            var lineNumber = cu.getLineNumber(node.getStartPosition());
-            var fieldName =
-                node.fragments().stream()
-                    .findFirst()
-                    .map(
-                        fragment ->
-                            ((VariableDeclarationFragment) fragment).getName().getIdentifier())
-                    .get();
+            var fragment =
+                (VariableDeclarationFragment) node.fragments().stream().findFirst().get();
+            // we need to check offset for cases when we have field initialization with several rows
+            var offset =
+                fragment.getInitializer().getStartPosition()
+                    + fragment.getInitializer().getLength();
+            var lineNumber = cu.getLineNumber(offset);
+            var fieldName = fragment.getName().getIdentifier();
 
             var type = rowNumberAndNameToType.get(String.valueOf(lineNumber), fieldName);
             if (type != null) {
