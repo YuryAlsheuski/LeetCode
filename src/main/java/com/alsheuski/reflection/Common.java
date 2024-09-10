@@ -20,7 +20,11 @@ public class Common {
 
     var result = List.of(1,2,3,4,5)
             .stream()
-            .filter(i->i%2==0)
+            .filter(i->
+            {
+              var rest =i%2;
+              return rest==0;
+            })
             .collect(Collectors.toList());
 
     for(var loopVar : result){
