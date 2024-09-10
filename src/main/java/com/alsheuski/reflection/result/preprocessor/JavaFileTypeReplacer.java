@@ -34,15 +34,15 @@ public class JavaFileTypeReplacer {
       String pathToJavaFile, MultiKeyMap<String, String> rowNumberAndNameToType)
       throws IOException {
 
-    String sourceCode = readFileToString(pathToJavaFile);
-    ASTParser parser = ASTParser.newParser(AST.JLS21);
+    var sourceCode = readFileToString(pathToJavaFile);
+    var parser = ASTParser.newParser(AST.JLS21);
     parser.setSource(sourceCode.toCharArray());
     parser.setKind(ASTParser.K_COMPILATION_UNIT);
 
-    CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+    var cu = (CompilationUnit) parser.createAST(null);
 
     cu.recordModifications();
-    AST ast = cu.getAST();
+    var ast = cu.getAST();
 
     cu.accept(
         new ASTVisitor() {
