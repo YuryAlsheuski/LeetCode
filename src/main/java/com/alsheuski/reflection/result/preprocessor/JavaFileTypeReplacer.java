@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.commons.collections4.map.MultiKeyMap;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -242,6 +243,11 @@ public class JavaFileTypeReplacer {
       private boolean canBeReplacedWithVar(ASTNode initializer) {
         return initializer != null
             && !(initializer instanceof NullLiteral)
+            && !StringUtils.startsWithAny(
+                initializer.toString(),
+                "List.of",
+                "Map.of",
+                "Set.of") // for cases when List.of has lambda argument e.t.c
             && !(initializer instanceof LambdaExpression)
             && ((!(initializer instanceof ClassInstanceCreation))
                 || (!(((ClassInstanceCreation) initializer).getType() instanceof ParameterizedType))
