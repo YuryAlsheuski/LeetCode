@@ -23,6 +23,14 @@ public class Common {
             .filter(i->i%2==0)
             .collect(Collectors.toList());
 
+    for(var loopVar : result){
+      System.err.println(loopVar);
+    }
+
+    for(var loopVar2=0; loopVar2<=result.size(); loopVar2++){
+      System.err.println( loopVar2);
+    }
+
     new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);

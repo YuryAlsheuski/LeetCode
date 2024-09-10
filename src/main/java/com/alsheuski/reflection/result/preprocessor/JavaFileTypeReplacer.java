@@ -14,11 +14,15 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.EnhancedForStatement;
+import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.LambdaExpression;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jface.text.Document;
@@ -42,34 +46,72 @@ public class JavaFileTypeReplacer {
 
     cu.accept(
         new ASTVisitor() {
+
+          @Override
+          public boolean visit(ForStatement node) {
+            var expression =
+                (VariableDeclarationExpression)
+                    node.initializers().stream()
+                        .filter(i -> i instanceof VariableDeclarationExpression)
+                        .findFirst()
+                        .get();
+
+            var fragment =
+                (VariableDeclarationFragment) expression.fragments().stream().findFirst().get();
+
+            var type = getFieldType(fragment);
+            if (type != null) {
+              expression.setType(type);
+            }
+
+            return super.visit(node);
+          }
+
+          @Override
+          public boolean visit(EnhancedForStatement node) {
+
+            var loopField = node.getParameter();
+
+            var type = getFieldType(loopField);
+            if (type != null) {
+              loopField.setType(type);
+            }
+
+            return super.visit(node);
+          }
+
           @Override
           public boolean visit(VariableDeclarationStatement node) {
+
             var fragment =
                 (VariableDeclarationFragment) node.fragments().stream().findFirst().get();
+
+            var type = getFieldType(fragment);
+            if (type != null) {
+              node.setType(type);
+            }
+
+            return super.visit(node);
+          }
+
+          private Type getFieldType(VariableDeclaration node) {
             // we need to check offset for cases when we have field initialization with several rows
-            var offset =
-                fragment.getInitializer().getStartPosition()
-                    + fragment.getInitializer().getLength();
+            var offset = node.getStartPosition() + node.getLength();
             var lineNumber = cu.getLineNumber(offset);
-            var fieldName = fragment.getName().getIdentifier();
+            var fieldName = node.getName().getIdentifier();
 
             var type = rowNumberAndNameToType.get(String.valueOf(lineNumber), fieldName);
-            if (type != null) {
-              Type realType;
-              var primitiveTypeCode = PrimitiveType.toCode(type);
-              if (primitiveTypeCode == null) {
-                if (type.contains("<")) {
-                  realType = createParameterizedType(ast, type);
-                } else {
-                  realType = ast.newSimpleType(ast.newName(type));
-                }
-              } else {
-                realType = ast.newPrimitiveType(primitiveTypeCode);
-              }
-
-              node.setType(realType);
+            if (type == null) {
+              return null;
             }
-            return super.visit(node);
+            var primitiveTypeCode = PrimitiveType.toCode(type);
+            if (primitiveTypeCode == null) {
+              if (type.contains("<")) {
+                return createParameterizedType(ast, type);
+              }
+              return ast.newSimpleType(ast.newName(type));
+            }
+            return ast.newPrimitiveType(primitiveTypeCode);
           }
 
           private ParameterizedType createParameterizedType(AST ast, String type) {
