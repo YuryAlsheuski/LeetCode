@@ -1,10 +1,18 @@
 package com.alsheuski.reflection.result;
 
-
+import com.alsheuski.reflection.result.config.ClassVisitorConfig;
+import com.alsheuski.reflection.result.config.ConfigManager;
+import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.preprocessor.JavaFilePreprocessor;
 import com.alsheuski.reflection.result.util.CompilerUtil;
+import com.alsheuski.reflection.result.visitor.ClassDepsVisitor;
+
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.function.Predicate;
+
+import static com.alsheuski.reflection.result.util.LoaderUtil.buildClassesMetadata;
 
 public class Main {
   public static void main(String[] args) throws IOException {
@@ -22,12 +30,12 @@ public class Main {
             gContext.getWorkDirectory().toString(),
             gContext.getProjectClassPath());
 
-    var noVarTypesContent =
+    /* var noVarTypesContent =
         JavaFilePreprocessor.removeVarTypes(newJavaFile.toString(), newClassFile.toString());
 
-    System.err.println(noVarTypesContent);
+    System.err.println(noVarTypesContent);*/
 
-     /*var root = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/target/classes/";
+    var root = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/target/classes/";
     var className = "com/alsheuski/reflection/Common";
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");
 
@@ -39,7 +47,7 @@ public class Main {
         new ClassDepsVisitor(root, configManager, 2)
             .getAllDeps(new ClassLoadingContext(className, false));
 
-    System.err.println(buildClassesMetadata(className, new ArrayList<>(result.values())));*/
+    System.err.println(buildClassesMetadata(className, new ArrayList<>(result.values())));
   }
   // todo check methods overriding
 }
