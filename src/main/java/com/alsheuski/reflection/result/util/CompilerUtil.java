@@ -9,14 +9,15 @@ import javax.tools.ToolProvider;
 
 public class CompilerUtil {
 
-  public static Path compile(String sourceFilePath, String outputDir, String classpath)
+  public static CompiledClassPath compile(String sourceFilePath, String outputDir, String classpath)
       throws IOException {
 
     doCompile(sourceFilePath, outputDir, classpath);
 
-    var classPath = getClassName(sourceFilePath);
+    var sourceRootPath = sourceRootPath(sourceFilePath);
+    var absolutePath = Paths.get(outputDir, sourceRootPath + ".class");
 
-    return Paths.get(outputDir, classPath + ".class");
+    return new CompiledClassPath(absolutePath, sourceRootPath);
   }
 
   private static void doCompile(String sourceFilePath, String outputDir, String classpath) {
@@ -35,7 +36,7 @@ public class CompilerUtil {
     }
   }
 
-  private static String getClassName(String sourceFilePath) throws IOException {
+  private static Path sourceRootPath(String sourceFilePath) throws IOException {
     try (var reader = new BufferedReader(new FileReader(sourceFilePath))) {
       var line = "";
       var packageName = "";
@@ -57,7 +58,7 @@ public class CompilerUtil {
       }
 
       var packagePath = getPackagePath(packageName.split("\\."));
-      return packagePath == null ? className : packagePath.resolve(className).toString();
+      return packagePath == null ? Path.of(className) : packagePath.resolve(className);
     }
   }
 
@@ -71,5 +72,24 @@ public class CompilerUtil {
       path = path.resolve(packageFolders[i]);
     }
     return path;
+  }
+
+  public static class CompiledClassPath {
+
+    private final Path absolutePath;
+    private final Path sourceRootPath;
+
+    public CompiledClassPath(Path absolutePath, Path sourceRootPath) {
+      this.absolutePath = absolutePath;
+      this.sourceRootPath = sourceRootPath;
+    }
+
+    public Path getAbsolutePath() {
+      return absolutePath;
+    }
+
+    public Path getSourceRootPath() {
+      return sourceRootPath;
+    }
   }
 }

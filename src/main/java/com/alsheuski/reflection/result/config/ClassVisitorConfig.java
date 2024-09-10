@@ -4,16 +4,16 @@ import java.util.function.Predicate;
 
 public class ClassVisitorConfig {
 
-  private final String className;
+  private final String sourceRootPath;
   private final Predicate<Integer> accessIdentifierFilter;
 
-  public ClassVisitorConfig(String className, Predicate<Integer> accessIdentifierFilter) {
-    this.className = className;
+  public ClassVisitorConfig(String sourceRootPath, Predicate<Integer> accessIdentifierFilter) {
+    this.sourceRootPath = sourceRootPath;
     this.accessIdentifierFilter = accessIdentifierFilter;
   }
 
-  public String getClassName() {
-    return className;
+  public String getSourceRootPath() {
+    return sourceRootPath;
   }
 
   public Predicate<Integer> getAccessIdentifierFilter() {

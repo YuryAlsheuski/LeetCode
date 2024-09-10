@@ -27,7 +27,7 @@ public class Common {
             })
             .collect(Collectors.toList());
 
-    for(var loopVar : result){
+    for(int loopVar : result){
       System.err.println(loopVar);
     }
 

@@ -11,6 +11,7 @@ import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -61,9 +62,9 @@ public class ClassDepsVisitor {
 
       classNameToMetaClass.put(className, targetClass);
     }
-    var classPath = rootClassPath + className + ".class";
+    var classPath = Path.of(rootClassPath,className + ".class");
 
-    loadClass(classPath, getInternalVisitor(context));
+    loadClass(classPath.toString(), getInternalVisitor(context));
 
     if (currentLevelClasses.isEmpty()) { // level completed
       deep = deep - 1;

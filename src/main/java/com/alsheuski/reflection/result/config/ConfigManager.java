@@ -19,7 +19,7 @@ public class ConfigManager {
   }
 
   public ConfigManager addConfig(ClassVisitorConfig config) {
-    classNameToConfig.put(config.getClassName(), config);
+    classNameToConfig.put(config.getSourceRootPath(), config);
     return this;
   }
 
