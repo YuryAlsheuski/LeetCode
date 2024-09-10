@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -198,34 +199,55 @@ public class JavaFileTypeReplacer {
 
   private ASTVisitor getVisitor() {
     return new ASTVisitor() {
+
+      @Override
+      public boolean visit(ForStatement node) {
+        var expression =
+            (VariableDeclarationExpression)
+                node.initializers().stream()
+                    .filter(i -> i instanceof VariableDeclarationExpression)
+                    .findFirst()
+                    .get();
+
+        var fragment =
+            (VariableDeclarationFragment) expression.fragments().stream().findFirst().get();
+        if (canBeReplacedWithVar(fragment.getInitializer())) {
+          var ast = node.getAST();
+          expression.setType(ast.newSimpleType(ast.newSimpleName("var")));
+        }
+
+        return super.visit(node);
+      }
+
+      @Override
+      public boolean visit(EnhancedForStatement node) {
+        var loopField = node.getParameter();
+        var ast = node.getAST();
+        loopField.setType(ast.newSimpleType(ast.newSimpleName("var")));
+
+        return super.visit(node);
+      }
+
       @Override
       public boolean visit(VariableDeclarationStatement node) {
-        if (canBeReplacedWithVar(node)) {
+        var fragment = (VariableDeclarationFragment) node.fragments().get(0);
+
+        if (canBeReplacedWithVar(fragment.getInitializer())) {
           var ast = node.getAST();
           node.setType(ast.newSimpleType(ast.newSimpleName("var")));
         }
         return super.visit(node);
       }
 
-      private boolean canBeReplacedWithVar(VariableDeclarationStatement node) {
-        if (node.fragments().size() != 1) {
-          return false;
-        }
-        var fragment = (VariableDeclarationFragment) node.fragments().get(0);
-        var initializer = fragment.getInitializer();
-
-        if (initializer == null
-            || initializer instanceof NullLiteral
-            || initializer instanceof LambdaExpression
-            || ((initializer instanceof ClassInstanceCreation)
-                && (((ClassInstanceCreation) initializer).getType() instanceof ParameterizedType)
-                && ((ParameterizedType) ((ClassInstanceCreation) initializer).getType())
+      private boolean canBeReplacedWithVar(ASTNode initializer) {
+        return initializer != null
+            && !(initializer instanceof NullLiteral)
+            && !(initializer instanceof LambdaExpression)
+            && ((!(initializer instanceof ClassInstanceCreation))
+                || (!(((ClassInstanceCreation) initializer).getType() instanceof ParameterizedType))
+                || !((ParameterizedType) ((ClassInstanceCreation) initializer).getType())
                     .typeArguments()
-                    .isEmpty())) {
-          return false;
-        }
-
-        return true;
+                    .isEmpty());
       }
     };
   }

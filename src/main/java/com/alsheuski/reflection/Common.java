@@ -10,7 +10,7 @@ public class Common {
     var ppa = new GenericChild();List<String> ff = new ArrayList<>();
     System.err.println(ppa);
     System.err.println(ff);
-    GenericParent parent = new GenericChild();
+    GenericParent<?,?,?> parent = new GenericChild();
     parent.get(null);
     parent.getParentGenericArr(null, null);
 
@@ -22,16 +22,16 @@ public class Common {
             .stream()
             .filter(i->
             {
-              var rest =i%2;
+              int rest =i%2;
               return rest==0;
             })
             .collect(Collectors.toList());
 
-    for(int loopVar : result){
-      System.err.println(loopVar);
+   for(int loopVar : result){
+     System.err.println(loopVar);
     }
 
-    for(var loopVar2=0; loopVar2<=result.size(); loopVar2++){
+    for(int loopVar2=0; loopVar2<=result.size(); loopVar2++){
       System.err.println( loopVar2);
     }
 
