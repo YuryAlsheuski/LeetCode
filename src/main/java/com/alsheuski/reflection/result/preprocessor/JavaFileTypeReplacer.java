@@ -8,17 +8,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import org.apache.commons.collections4.map.MultiKeyMap;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.LambdaExpression;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
@@ -212,7 +209,7 @@ public class JavaFileTypeReplacer {
 
         var fragment =
             (VariableDeclarationFragment) expression.fragments().stream().findFirst().get();
-        if (canBeReplacedWithVar(fragment.getInitializer())) {
+        if (canBeReplacedWithVar(expression.getType(), fragment.getInitializer())) {
           var ast = node.getAST();
           expression.setType(ast.newSimpleType(ast.newSimpleName("var")));
         }
@@ -233,27 +230,17 @@ public class JavaFileTypeReplacer {
       public boolean visit(VariableDeclarationStatement node) {
         var fragment = (VariableDeclarationFragment) node.fragments().get(0);
 
-        if (canBeReplacedWithVar(fragment.getInitializer())) {
+        if (canBeReplacedWithVar(node.getType(), fragment.getInitializer())) {
           var ast = node.getAST();
           node.setType(ast.newSimpleType(ast.newSimpleName("var")));
         }
         return super.visit(node);
       }
 
-      private boolean canBeReplacedWithVar(ASTNode initializer) {
-        return initializer != null
-            && !(initializer instanceof NullLiteral)
-            && !StringUtils.startsWithAny(
-                initializer.toString(),
-                "List.of",
-                "Map.of",
-                "Set.of") // for cases when List.of has lambda argument e.t.c
-            && !(initializer instanceof LambdaExpression)
-            && ((!(initializer instanceof ClassInstanceCreation))
-                || (!(((ClassInstanceCreation) initializer).getType() instanceof ParameterizedType))
-                || !((ParameterizedType) ((ClassInstanceCreation) initializer).getType())
-                    .typeArguments()
-                    .isEmpty());
+      private boolean canBeReplacedWithVar(Type linkType, ASTNode initializer) {
+        return !linkType.isParameterizedType()
+            && initializer != null
+            && !(initializer instanceof NullLiteral);
       }
     };
   }

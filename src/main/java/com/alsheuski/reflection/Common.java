@@ -3,6 +3,7 @@ package com.alsheuski.reflection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Common {
@@ -49,6 +50,9 @@ public class Common {
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getParentGenericArr(null, null);
     var primitive = new GenericParent<List<String>, ClassA, Map<String, Double>>().getPrimitive();
 
+    Supplier<String> supp = new CommonInsider().getStr();
+    System.err.println(supp.get().length());
+
     var pp = new GenericChild();
     var b = 0;
     var s = 0;
@@ -75,8 +79,8 @@ public class Common {
   }
 
   public class CommonInsider {
-    public String getStr() {
-      return "fdsfsd";
+    public <T> Supplier<T> getStr() {
+      return ()-> (T) "fdsfsd";
     }
   }
 

@@ -1,10 +1,15 @@
 package com.alsheuski.reflection;
 
+import java.util.function.Supplier;
 
 public class TestClass {
-  
-/*  public void testMethod(int i, List<String> list){
+
+  public void test() {
+    Supplier<String> supp = getGeneric();
+    System.err.println(supp.get().length());
   }
-  public void testMethod(int i, List<Integer> list){
-  }*/
+
+  public <T> Supplier<T> getGeneric(){
+    return ()-> (T) "fdsfsd";
+  }
 }

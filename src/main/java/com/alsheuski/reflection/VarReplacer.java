@@ -1,73 +1,65 @@
 package com.alsheuski.reflection;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import org.objectweb.asm.*;
+import org.eclipse.jdt.core.dom.*;
 
-public class VarReplacer extends ClassVisitor {
-  private final Map<Integer, String> localVariableTypes = new HashMap<>();
+public class VarReplacer {
+  public static void main(String[] args) {
+    // Java code that you want to analyze and possibly replace with var import java.util.List;
+    String code =
+        "package com.alsheuski.reflection;\n"
+            + "\n"
+            + "        import java.util.function.Supplier;\n"
+                + "        import java.util.List;\n"
+            + "\n"
+            + "        public class TestClass {\n"
+            + "\n"
+            + "          public void test() {\n"
+            + "            int i = 0;\n"
+            + "            Supplier<String> supp = getGeneric();\n"
+            + "            List<String> list = new ArrayList<>();\n"
+            + "            System.err.println(i);\n"
+            + "            System.err.println(supp.get().length());\n"
+            + "          }\n"
+            + "\n"
+            + "          public <T> Supplier<T> getGeneric(){\n"
+            + "            return ()-> (T) \"fdsfsd\";\n"
+            + "          }\n"
+            + "        }";
 
-  public VarReplacer(ClassVisitor classVisitor) {
-    super(Opcodes.ASM9, classVisitor);
-  }
+    ASTParser parser = ASTParser.newParser(AST.JLS17); // Use the Java version you're targeting
+    parser.setSource(code.toCharArray());
+    parser.setKind(ASTParser.K_COMPILATION_UNIT);
 
-  @Override
-  public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
-    MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
-    return new MethodVisitor(Opcodes.ASM9, mv) {
+    CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+    cu.accept(new ASTVisitor() {
       @Override
-      public void visitLocalVariable(String name, String descriptor, String signature, Label start, Label end, int index) {
-        localVariableTypes.put(index, descriptor);
-        super.visitLocalVariable(name, descriptor, signature, start, end, index);
-      }
-
-      @Override
-      public void visitVarInsn(int opcode, int var) {
-        if (opcode == Opcodes.ASTORE && localVariableTypes.containsKey(var)) {
-          String type = localVariableTypes.get(var);
-          if (type.equals("Ljava/lang/Object;")) {
-            // Replace 'var' with the actual type descriptor
-            localVariableTypes.put(var, "Ljava/lang/String;");
+      public boolean visit(VariableDeclarationStatement node) {
+        Type type = node.getType();
+        if (type.isSimpleType()) {
+          SimpleType simpleType = (SimpleType) type;
+          // Check if the type is generic
+          if (isGenericType(simpleType)) {
+            System.out.println("Generic type, skipping 'var' for: " + node);
+          } else {
+            System.out.println("Can replace with 'var': " + node);
           }
+        } else if (type.isPrimitiveType()) {
+          // Primitive types can be safely replaced with 'var'
+          System.out.println("Can replace with 'var': " + node);
         }
-        super.visitVarInsn(opcode, var);
+        return super.visit(node);
       }
-    };
-  }
 
-  public static void main(String[] args) throws Exception {
-    // Read the Main class
-    ClassReader cr = new ClassReader("com/alsheuski/reflection/Main");
-    ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-    VarReplacer vr = new VarReplacer(cw);
-
-    cr.accept(vr, 0);
-
-    // Get the modified bytecode
-    byte[] bytecode = cw.toByteArray();
-
-    // Write the modified bytecode to a .class file
-    try (FileOutputStream fos = new FileOutputStream("Main.class")) {
-      fos.write(bytecode);
-    }
-
-    // Use CFR decompiler to convert the bytecode back to Java source code
-  // decompileClass("Main.class");
-  }
-
-  public static void decompileClass(String classFilePath) throws Exception {
-    // Use CFR decompiler to convert bytecode to Java source code
-    String[] cfrArgs = {classFilePath};
-    org.benf.cfr.reader.Main.main(cfrArgs);
-
-    // Read and print the decompiled Java source code
-    try (BufferedReader reader = new BufferedReader(new FileReader(classFilePath.replace(".class", ".java")))) {
-      String line;
-      while ((line = reader.readLine()) != null) {
-        System.out.println(line);
+      private boolean isGenericType(SimpleType type) {
+        if (type.getName() instanceof QualifiedName) {
+          QualifiedName qualifiedName = (QualifiedName) type.getName();
+          // In real scenarios, you can also resolve the bindings and check for generics
+          // Here we are just checking if the type name is parameterized
+          return qualifiedName.getFullyQualifiedName().contains("<");
+        }
+        return false;
       }
-    }
+    });
   }
 }
-
