@@ -128,7 +128,11 @@ public class JavaFileTypeReplacer {
               if (arg.contains("<")) {
                 parameterizedType.typeArguments().add(createParameterizedType(ast, arg));
               } else {
-                parameterizedType.typeArguments().add(ast.newSimpleType(ast.newName(arg.trim())));
+                var argType =
+                    "?".equals(arg)
+                        ? ast.newWildcardType()
+                        : ast.newSimpleType(ast.newName(arg.trim()));
+                parameterizedType.typeArguments().add(argType);
               }
             }
 
