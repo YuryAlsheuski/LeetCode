@@ -42,11 +42,9 @@ public class Main {
         new ConfigManager(allowedClassPaths)
             .addConfig(new ClassVisitorConfig(className, i -> true));
 
-
     var result =
         new ClassDepsVisitor(gContext.getRootClassPath().toString(), configManager, 2)
             .getAllDeps(new ClassLoadingContext(className, false));
-
 
     System.err.println(buildClassesMetadata(className, new ArrayList<>(result.values())));
   }
