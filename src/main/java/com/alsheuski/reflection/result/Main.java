@@ -36,7 +36,6 @@ public class Main {
     System.err.println(noVarTypesContent);
 
 
-
     var className = compiledClassPath.getSourceRootPath().toString();
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");
     var configManager =
