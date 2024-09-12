@@ -29,10 +29,11 @@ public class Main {
             gContext.getWorkDirectory().toString(),
             gContext.getProjectClassPath());
 
-    /* var noVarTypesContent =
-        JavaFilePreprocessor.removeVarTypes(newJavaFile.toString(), newClassFile.toString());
+    var noVarTypesContent =
+        JavaFilePreprocessor.removeVarTypes(
+            newJavaFile.toString(), compiledClassPath.getAbsolutePath().toString());
 
-    System.err.println(noVarTypesContent);*/
+    System.err.println(noVarTypesContent);
 
     var className = compiledClassPath.getSourceRootPath().toString();
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");

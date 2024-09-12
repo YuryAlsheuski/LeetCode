@@ -53,7 +53,7 @@ public class Common {
     Supplier<String> supp = new CommonInsider().getStr();
     System.err.println(supp.get().length());
 
-    var pp = new GenericChild();
+    GenericParent<?,?,?> pp = new GenericChild();
     var b = 0;
     var s = 0;
     pp.primitivesTest(null);
