@@ -37,7 +37,6 @@ public class Main {
 
     var className = compiledClassPath.getSourceRootPath().toString();
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");
-
     var configManager =
         new ConfigManager(allowedClassPaths)
             .addConfig(new ClassVisitorConfig(className, i -> true));
