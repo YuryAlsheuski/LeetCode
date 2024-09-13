@@ -1,6 +1,5 @@
 package com.alsheuski.reflection.result.model;
 
-
 import java.util.Objects;
 
 public class Argument {
@@ -18,6 +17,11 @@ public class Argument {
 
   public String getName() {
     return name;
+  }
+
+  @Override
+  public String toString() {
+    return name.replace("$", "."); // replacing here for inner classes
   }
 
   @Override

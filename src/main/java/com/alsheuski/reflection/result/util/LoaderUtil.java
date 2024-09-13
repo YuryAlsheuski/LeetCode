@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -189,9 +188,7 @@ public class LoaderUtil {
     for (MetaClass mc : classes) {
       var signature = getClassSignature(mc);
       sb.append(
-          String.format(
-              "public class %s%s {\n",
-              mc.getName().replace("$", "."), signature)); // todo add interface support
+          String.format("public class %s%s {\n", mc, signature)); // todo add interface support
       for (var method : mc.getMethods()) {
         printMethod(sb, method);
       }
@@ -202,15 +199,8 @@ public class LoaderUtil {
 
   private static void printMethod(StringBuffer sb, Method method) {
     var argsStr =
-        method.getArgs().stream()
-            .map(
-                arg ->
-                    arg.getType().printClassName(getPrinter())
-                        + " "
-                        + arg.getName().replace("$", ".")) // replacing here for inner classes
-            .collect(joining(", "));
-    var returnTypeStr =
-        method.isConstructor() ? "" : " " + method.getReturnType().printClassName(getPrinter());
+        method.getArgs().stream().map(arg -> arg.getType() + " " + arg).collect(joining(", "));
+    var returnTypeStr = method.isConstructor() ? "" : " " + method.getReturnType();
     var staticPrefix = method.isStatic() ? " static" : "";
     sb.append(
         String.format(
@@ -244,9 +234,7 @@ public class LoaderUtil {
       }
       var signature = getClassSignature(mc);
       sb.append(
-          String.format(
-              "public class %s%s {\n",
-              mc.getName().replace("$", "."), signature)); // todo add interface support
+          String.format("public class %s%s {\n", mc, signature)); // todo add interface support
       for (var linkedMethod : linkedMethods) {
         printMethod(sb, linkedMethod);
       }
@@ -262,10 +250,6 @@ public class LoaderUtil {
     }
     var methodGenericArgs = parseFormalTypeParameters(signature);
     return parseGenericMethodPrefix(methodGenericArgs).map(prefix -> prefix + " ").orElse("");
-  }
-
-  private static Function<String, String> getPrinter() {
-    return LoaderUtil::getClassName;
   }
 
   public static void loadClass(String classPath, ClassVisitor visitor) {
