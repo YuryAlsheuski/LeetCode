@@ -190,7 +190,8 @@ public class LoaderUtil {
       var signature = getClassSignature(mc);
       sb.append(
           String.format(
-              "public class %s%s {\n", mc.getName(), signature)); // todo add interface support
+              "public class %s%s {\n",
+              mc.getName().replace("$", "."), signature)); // todo add interface support
       for (var method : mc.getMethods()) {
         printMethod(sb, method);
       }
@@ -202,7 +203,11 @@ public class LoaderUtil {
   private static void printMethod(StringBuffer sb, Method method) {
     var argsStr =
         method.getArgs().stream()
-            .map(arg -> arg.getType().printClassName(getPrinter()) + " " + arg.getName())
+            .map(
+                arg ->
+                    arg.getType().printClassName(getPrinter())
+                        + " "
+                        + arg.getName().replace("$", ".")) // replacing here for inner classes
             .collect(joining(", "));
     var returnTypeStr =
         method.isConstructor() ? "" : " " + method.getReturnType().printClassName(getPrinter());
@@ -212,7 +217,7 @@ public class LoaderUtil {
             "  public%s%s %s(%s);",
             staticPrefix,
             returnTypeStr,
-            method.getName(),
+            method.getName().replace("$", "."),
             argsStr)); // todo if needs add real access descriptor e.g.
     // public/protected/package - currently public stub only
     sb.append("\n");
@@ -240,7 +245,8 @@ public class LoaderUtil {
       var signature = getClassSignature(mc);
       sb.append(
           String.format(
-              "public class %s%s {\n", mc.getName(), signature)); // todo add interface support
+              "public class %s%s {\n",
+              mc.getName().replace("$", "."), signature)); // todo add interface support
       for (var linkedMethod : linkedMethods) {
         printMethod(sb, linkedMethod);
       }

@@ -22,7 +22,7 @@ public class MetaClass {
 
   public MetaClass(String fullName, Set<Method> methods) {
     this.fullName = fullName;
-    this.name = getClassName(fullName).replace("$", ".");
+    this.name = getClassName(fullName);
     this.methods = methods;
   }
 
