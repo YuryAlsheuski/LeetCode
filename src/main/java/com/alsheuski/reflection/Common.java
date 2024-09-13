@@ -40,6 +40,8 @@ public class Common {
     new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
+    new GenericParent<List<String>, ClassA, Map<String, Double>>().new InnerGetter();
+
     new GenericChild().superParentGet(null);
     new GenericChild().get(null);
     new GenericChild().getX(null);

@@ -40,7 +40,7 @@ public class GenericParent<TTT extends List<?>, K, P extends Map<String, ?>>
     return 0;
   }
 
-  public static class InnerGetter {
+  public class InnerGetter {
 
     public GenericParent<?, ?, ?> get() {
       return new GenericChild();
