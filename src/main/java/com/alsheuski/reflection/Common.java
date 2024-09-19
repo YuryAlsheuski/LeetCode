@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 public class Common {
   public Common(String test) {
+    String[] arr = new String [1];
     var ppa = new GenericChild();List<String> ff = new ArrayList<>();
     System.err.println(ppa);
     System.err.println(ff);
@@ -61,7 +62,7 @@ public class Common {
     pp.primitivesTest(null);
   }
 
-  public String getALabel(List<ClassA> aas, List<String> second) {
+ public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 

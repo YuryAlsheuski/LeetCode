@@ -108,9 +108,36 @@ public class JavaFileTypeReplacer {
               if (type.contains("<")) {
                 return createParameterizedType(ast, type);
               }
+              if (type.contains("[")) {
+                return parseArrayType(type, ast);
+              }
+
               return ast.newSimpleType(ast.newName(type));
             }
             return ast.newPrimitiveType(primitiveTypeCode);
+          }
+
+          private Type parseArrayType(String typeString, AST ast) {
+
+            typeString = typeString.trim();
+
+            if (!typeString.matches("^[a-zA-Z_][a-zA-Z0-9_]*\\s*(\\[\\s*\\])*")) {
+              throw new IllegalArgumentException("Invalid array type string: " + typeString);
+            }
+
+            var baseTypeName = typeString.replaceAll("\\[.*", "").trim();
+            int dimensions = typeString.length() - typeString.replace("[", "").length();
+
+            var baseType = ast.newSimpleType(ast.newSimpleName(baseTypeName));
+
+            var arrayType = ast.newArrayType(baseType);
+
+            var dim = arrayType.dimensions();
+
+            for (int i = 0; i < dimensions - 1; i++) {
+              dim.add(ast.newDimension());
+            }
+            return arrayType;
           }
 
           private ParameterizedType createParameterizedType(AST ast, String type) {
