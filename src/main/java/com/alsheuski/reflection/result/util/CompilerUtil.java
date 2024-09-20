@@ -5,9 +5,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Pattern;
 import javax.tools.ToolProvider;
 
 public class CompilerUtil {
+
+  private static final Pattern CLASS_NAME_PATTERN =
+      Pattern.compile("(?:public\\s+)?(?:abstract\\s+)?class\\s+(\\w+)");
 
   public static CompiledClassPath compile(String sourceFilePath, String outputDir, String classpath)
       throws IOException {
@@ -47,8 +51,13 @@ public class CompilerUtil {
 
         if (line.startsWith("package ")) {
           packageName = line.substring(8, line.indexOf(';')).trim();
-        } else if (line.startsWith("public class ") || line.startsWith("class ")) {
-          className = line.split("\\s+")[2];
+          continue;
+        }
+        if (line.startsWith("class ") || line.contains(" class ")) {
+          var matcher = CLASS_NAME_PATTERN.matcher(line);
+          if (matcher.find()) {
+            className = matcher.group(1);
+          }
           break;
         }
       }
