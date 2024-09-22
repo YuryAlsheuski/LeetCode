@@ -151,6 +151,7 @@ public class ClassDepsVisitor {
           return null;
         }
         var method = getMethod(access, name, descriptor, signature);
+        context.getCurrentClass().addMethod(method);
         return new MethodDepsVisitor(typeResolver, nextLevelQueue, context, method);
       }
 
@@ -176,7 +177,6 @@ public class ClassDepsVisitor {
                       return existed;
                     })
                 .orElse(new Method(access, descriptor, type, methodName, isConstructor));
-        currentClass.addMethod(method);
 
         return method;
       }
