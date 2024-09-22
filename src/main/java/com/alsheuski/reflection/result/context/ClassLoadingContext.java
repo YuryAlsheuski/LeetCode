@@ -1,12 +1,14 @@
 package com.alsheuski.reflection.result.context;
 
 import com.alsheuski.reflection.result.model.MetaClass;
+import java.util.Objects;
 
 public class ClassLoadingContext {
 
   private final MetaClass currentClass;
   private final ClassLoadingContext childClassContext;
   private final boolean addToResults;
+
   private String loadingContextSignature;
 
   public ClassLoadingContext(String currentClass, boolean addToResults) {
@@ -55,5 +57,21 @@ public class ClassLoadingContext {
 
   public void setLoadingContextSignature(String loadingContextSignature) {
     this.loadingContextSignature = loadingContextSignature;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ClassLoadingContext that = (ClassLoadingContext) o;
+    return addToResults == that.addToResults
+        && Objects.equals(currentClass, that.currentClass)
+        && Objects.equals(childClassContext, that.childClassContext)
+        && Objects.equals(loadingContextSignature, that.loadingContextSignature);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(currentClass, childClassContext, addToResults, loadingContextSignature);
   }
 }

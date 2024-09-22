@@ -6,10 +6,11 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Common {
+public class Common extends ParentForCommonClass{
   public Common(String test) {
     String[] arr = new String [1];
     var ppa = new GenericChild();List<String> ff = new ArrayList<>();
+    test();
     System.err.println(ppa);
     System.err.println(ff);
     GenericParent<?,?,?> parent = new GenericChild();
@@ -79,6 +80,11 @@ public class Common {
 
   public void commonInsider(CommonInsider insider) {
     System.err.println(insider.getStr());
+  }
+
+  @Override
+  protected void test() {
+
   }
 
   public class CommonInsider {

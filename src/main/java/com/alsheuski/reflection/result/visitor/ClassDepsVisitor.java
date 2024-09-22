@@ -128,6 +128,10 @@ public class ClassDepsVisitor {
         context.setLoadingContextSignature(signature);
         typeResolver.resolveClassSignature(context);
 
+        if(context.equals(rootClassLoadingContext)){
+          return;
+        }
+
         var hasValidParent = classPathFilter.test(superName);
         if (hasValidParent) {
           ClassDepsVisitor.this.visit(new ClassLoadingContext(superName, context));
