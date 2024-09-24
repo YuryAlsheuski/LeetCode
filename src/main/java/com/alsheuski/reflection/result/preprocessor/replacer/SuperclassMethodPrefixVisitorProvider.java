@@ -1,8 +1,13 @@
 package com.alsheuski.reflection.result.preprocessor.replacer;
 
+import static java.util.stream.Collectors.toList;
+
 import com.alsheuski.reflection.result.context.GlobalContext;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -14,7 +19,7 @@ import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 public class SuperclassMethodPrefixVisitorProvider implements ASTVisitorProvider {
 
   private final GlobalContext context;
-  private Type superclassType;
+  private List<String> parentTypes;
 
   public SuperclassMethodPrefixVisitorProvider(GlobalContext context) {
     this.context = context;
@@ -44,7 +49,16 @@ public class SuperclassMethodPrefixVisitorProvider implements ASTVisitorProvider
 
       @Override
       public boolean visit(TypeDeclaration node) {
-        superclassType = node.getSuperclassType();
+        var typeCollection = new ArrayList<Type>();
+        typeCollection.add(node.getSuperclassType());
+        typeCollection.addAll(node.superInterfaceTypes());
+
+        parentTypes =
+            typeCollection.stream()
+                .filter(Objects::nonNull)
+                .map(ASTNode::toString)
+                .collect(toList());
+
         return super.visit(node);
       }
 
@@ -53,8 +67,7 @@ public class SuperclassMethodPrefixVisitorProvider implements ASTVisitorProvider
         var methodBinding = node.resolveMethodBinding();
         if (methodBinding != null) {
           var declaringClass = methodBinding.getDeclaringClass();
-          if (declaringClass != null
-              && Objects.equals(declaringClass.getName(), superclassType.toString())) {
+          if (parentTypes.contains(declaringClass.getName())) {
             var currentClass = methodBinding.getDeclaringClass();
             if (!isMethodOverridden(currentClass, methodBinding)) {
               var ast = node.getAST();

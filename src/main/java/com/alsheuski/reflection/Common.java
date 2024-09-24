@@ -6,12 +6,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Common extends ParentForCommonClass{
+public class Common extends ParentForCommonClass<String,String> implements ParentCommonInterface{
   public Common(String test) {
     String[] arr = new String [1];
     var ppa = new GenericChild();List<String> ff = new ArrayList<>();
     test();
     test2();
+    test3();
     System.err.println(ppa);
     System.err.println(ff);
     GenericParent<?,?,?> parent = new GenericChild();
@@ -83,8 +84,10 @@ public class Common extends ParentForCommonClass{
     System.err.println(insider.getStr());
   }
 
+
+
   @Override
-  protected void test() {
+  public void test() {
 
   }
 
