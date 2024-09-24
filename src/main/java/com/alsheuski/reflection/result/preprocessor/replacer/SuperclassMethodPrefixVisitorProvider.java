@@ -4,7 +4,6 @@ import com.alsheuski.reflection.result.context.GlobalContext;
 import java.util.Objects;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -12,8 +11,7 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 
-public class SuperclassMethodPrefixVisitorProvider
-    implements ASTVisitorProvider {
+public class SuperclassMethodPrefixVisitorProvider implements ASTVisitorProvider {
 
   private final GlobalContext context;
   private Type superclassType;
@@ -34,15 +32,14 @@ public class SuperclassMethodPrefixVisitorProvider
     parser.setEnvironment(classpathEntries, sourcepathEntries, new String[] {"UTF-8"}, true);
     parser.setUnitName(context.getFilePath().getFileName().toString());
 
-    return getVisitor((CompilationUnit) parser.createAST(null));
+    return getVisitor(parser);
   }
-  
-  private CompilationUnitVisitor getVisitor(CompilationUnit cu){
-    var rewriter = ASTRewrite.create(cu.getAST());
-    return new CompilationUnitVisitor(){
-      @Override
-      public CompilationUnit getCompilationUnit(ASTParser parser) {
-        return cu;
+
+  private CompilationUnitVisitor getVisitor(ASTParser parser) {
+    return new CompilationUnitVisitor(parser) {
+
+      {
+        rewriter = ASTRewrite.create(cu.getAST());
       }
 
       @Override
@@ -57,7 +54,7 @@ public class SuperclassMethodPrefixVisitorProvider
         if (methodBinding != null) {
           var declaringClass = methodBinding.getDeclaringClass();
           if (declaringClass != null
-                  && Objects.equals(declaringClass.getName(), superclassType.toString())) {
+              && Objects.equals(declaringClass.getName(), superclassType.toString())) {
             var currentClass = methodBinding.getDeclaringClass();
             if (!isMethodOverridden(currentClass, methodBinding)) {
               var ast = node.getAST();
@@ -67,7 +64,6 @@ public class SuperclassMethodPrefixVisitorProvider
               superMethodInvocation.setName(ast.newSimpleName(methodName));
 
               rewriter.replace(node, superMethodInvocation, null);
-              
             }
           }
         }
@@ -83,7 +79,6 @@ public class SuperclassMethodPrefixVisitorProvider
         }
         return false;
       }
-      
     };
   }
 }

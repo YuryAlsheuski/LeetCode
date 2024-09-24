@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import org.apache.commons.collections4.map.MultiKeyMap;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.ParameterizedType;
@@ -25,16 +24,11 @@ public class RealTypeVisitorProvider implements ASTVisitorProvider {
 
   @Override
   public CompilationUnitVisitor get(ASTParser parser) {
-    return getVisitor((CompilationUnit) parser.createAST(null));
+    return getVisitor(parser);
   }
 
-  private CompilationUnitVisitor getVisitor(CompilationUnit cu) {
-    return new CompilationUnitVisitor() {
-
-      @Override
-      public CompilationUnit getCompilationUnit(ASTParser parser) {
-        return cu;
-      }
+  private CompilationUnitVisitor getVisitor(ASTParser parser) {
+    return new CompilationUnitVisitor(parser) {
 
       @Override
       public boolean visit(ForStatement node) {

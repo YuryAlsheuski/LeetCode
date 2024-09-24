@@ -23,12 +23,14 @@ public class JavaFileContentReplacer {
 
     var visitor = provider.get(parser);
 
-    var cu = visitor.getCompilationUnit(parser);
+    var cu = visitor.getCompilationUnit();
     cu.recordModifications();
     cu.accept(visitor);
 
+    var rewriter = visitor.getRewriter();
+
     var document = new Document(sourceCode);
-    var edits = cu.rewrite(document, null);
+    var edits = rewriter != null ? rewriter.rewriteAST(document, null) : cu.rewrite(document, null);
     try {
       edits.apply(document);
     } catch (Exception e) {
