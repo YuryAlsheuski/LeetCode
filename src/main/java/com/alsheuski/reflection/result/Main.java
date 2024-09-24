@@ -20,12 +20,14 @@ public class Main {
         "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/src/main/java/com/alsheuski/reflection/Common.java";
     var workingDir = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/work";
     var gContext = new GlobalContext(pathToJavaFile, workingDir);
-    var newJavaFile = JavaFileUtil.simplifyJavaFileTypes(pathToJavaFile, gContext).toString();
-
+    // todo rewrite in the future JavaFileUtil content modifer methods like stream API with terminal
+    // operations compile()/get()
+    var newJavaFile = JavaFileUtil.simplifyJavaFileTypes(gContext).toString();
     var newClassFilePath = CompilerUtil.compile(newJavaFile, gContext);
-    var noVarTypesContent = JavaFileUtil.removeVarTypes(newJavaFile, newClassFilePath.toString());
+    JavaFileUtil.removeVarTypes(newJavaFile, newClassFilePath.toString());
+    var finalContent = JavaFileUtil.setSuperPrefix(newJavaFile, gContext);
 
-    System.err.println(noVarTypesContent);
+    System.err.println(finalContent);
 
     var className = gContext.getSourceRootFilePath().toString();
     Predicate<String> allowedClassPaths = path -> path.startsWith("com/alsheuski");

@@ -13,14 +13,19 @@ public class GlobalContext {
   private final Path sourceRootFilePath;
   private final Path
       workDirectory; // todo set it automatically like temp folder hardcode and remove like auto
+  private final Path filePath;
 
   // closeable;
 
   public GlobalContext(String pathToJavaFile, String workDirectory) {
     this.workDirectory = PathResolver.resolve(workDirectory);
-    sourceRootFilePath = JavaFileUtil.getSourceRootFilePath(pathToJavaFile);
+    filePath = PathResolver.resolve(pathToJavaFile);
+    sourceRootFilePath = JavaFileUtil.getSourceRootFilePath(filePath);
     projectSourcesDir =
-        Path.of(pathToJavaFile.substring(0, pathToJavaFile.indexOf(sourceRootFilePath.toString())));
+        Path.of(
+            filePath
+                .toString()
+                .substring(0, filePath.toString().indexOf(sourceRootFilePath.toString())));
     buildTool = AppBuildTool.getInstance(projectSourcesDir);
     projectRootDir = buildTool.getProjectRootDir();
     createDirs();
@@ -51,5 +56,9 @@ public class GlobalContext {
 
   public Path getSourceRootFilePath() {
     return sourceRootFilePath;
+  }
+
+  public Path getFilePath() {
+    return filePath;
   }
 }

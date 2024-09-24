@@ -5,8 +5,8 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.preprocessor.replacer.JavaFileContentReplacer;
 import com.alsheuski.reflection.result.preprocessor.replacer.RealTypeVisitorProvider;
+import com.alsheuski.reflection.result.preprocessor.replacer.SuperclassMethodPrefixVisitorProvider;
 import com.alsheuski.reflection.result.preprocessor.replacer.VarTypeVisitorProvider;
-import com.alsheuski.reflection.result.resolver.PathResolver;
 import com.alsheuski.reflection.result.visitor.FieldTypeClassVisitor;
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,8 +24,8 @@ public class JavaFileUtil {
 
   private JavaFileUtil() {}
 
-  public static Path getSourceRootFilePath(String sourceFilePath) {
-    try (var reader = new BufferedReader(new FileReader(sourceFilePath))) {
+  public static Path getSourceRootFilePath(Path sourceFilePath) {
+    try (var reader = new BufferedReader(new FileReader(sourceFilePath.toFile()))) {
       var line = "";
       var packageName = "";
       var className = "";
@@ -57,28 +57,38 @@ public class JavaFileUtil {
     }
   }
 
-  // todo CHECK IF POSSIBLE- for future will be better to process class once. The main idea to have
-  // one class loader which can load all necessary class data once
+  // todo CHECK IF POSSIBLE- for future will be better to process class once.
   public static String removeVarTypes(String pathToJavaFile, String pathToCompiledClass)
       throws IOException {
 
-    var javaFilePath = PathResolver.resolve(pathToJavaFile).toString();
-    var compiledClassPath = PathResolver.resolve(pathToCompiledClass).toString();
-
-    var asmVisitor = new FieldTypeClassVisitor(compiledClassPath);
-    loadClass(compiledClassPath, asmVisitor);
+    var asmVisitor = new FieldTypeClassVisitor(pathToCompiledClass);
+    loadClass(pathToCompiledClass, asmVisitor);
 
     var jdtVisitorProvider = new RealTypeVisitorProvider(asmVisitor.getRowNumbersMap());
-    return JavaFileContentReplacer.replace(javaFilePath, jdtVisitorProvider);
+    var content = JavaFileContentReplacer.replace(pathToJavaFile, jdtVisitorProvider);
+
+    writeToFile(Path.of(pathToJavaFile).toFile(), content);
+
+    return content;
   }
 
-  public static Path simplifyJavaFileTypes(String pathToJavaFile, GlobalContext context)
+  public static String setSuperPrefix(String pathToJavaFile, GlobalContext context)
       throws IOException {
 
-    var javaFilePath = PathResolver.resolve(pathToJavaFile);
+    var jdtVisitorProvider = new SuperclassMethodPrefixVisitorProvider(context);
+    var content = JavaFileContentReplacer.replace(pathToJavaFile, jdtVisitorProvider);
+    writeToFile(Path.of(pathToJavaFile).toFile(), content);
+
+    return content;
+  }
+
+  public static Path simplifyJavaFileTypes(GlobalContext context) throws IOException {
+
+    var pathToJavaFile = context.getFilePath();
     var content =
-        JavaFileContentReplacer.replace(javaFilePath.toString(), new VarTypeVisitorProvider());
-    var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
+        JavaFileContentReplacer.replace(pathToJavaFile.toString(), new VarTypeVisitorProvider());
+    var newJavaFilePath = context.getWorkDirectory().resolve(pathToJavaFile.getFileName());
+
     writeToFile(newJavaFilePath.toFile(), content);
 
     return newJavaFilePath;
