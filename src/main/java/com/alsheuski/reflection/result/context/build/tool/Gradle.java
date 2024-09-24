@@ -19,11 +19,13 @@ public class Gradle extends AppBuildTool {
 
   // todo support not wrapper only in the future
   @Override
-  protected String resolve(GlobalContext context) throws IOException {
+  public String resolve(GlobalContext context) {
     var scriptFile = createClasspathTask(context.getWorkDirectory());
     var gradlew = context.getProjectRootDir().resolve("gradlew.bat").toString();
     try (var reader = runCommands(gradlew, "-I", scriptFile.toString(), "printClasspath")) {
       return String.join(DELIMITER, reader.lines().filter(line -> line.contains(DELIMITER)).flatMap(line -> Arrays.stream(line.split(DELIMITER))).collect(toSet()));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

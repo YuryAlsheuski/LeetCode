@@ -5,8 +5,6 @@ import static java.util.stream.Collectors.toMap;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -38,19 +36,11 @@ public abstract class AppBuildTool {
     return null;
   }
 
-  public String resolveClasspath(GlobalContext context) {
-    try {
-      return context.getRootClassPath() + File.pathSeparator + resolve(context);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public Path getProjectRootDir() {
     return projectRootDir;
   }
 
-  protected abstract String resolve(GlobalContext context) throws IOException;
+  public abstract String resolve(GlobalContext context);
 
   public static AppBuildTool getInstance(Path rootClassPath) {
     if (INSTANCE == null) {

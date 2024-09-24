@@ -2,41 +2,32 @@ package com.alsheuski.reflection.result.context;
 
 import com.alsheuski.reflection.result.context.build.tool.AppBuildTool;
 import com.alsheuski.reflection.result.resolver.PathResolver;
+import com.alsheuski.reflection.result.util.JavaFileUtil;
 import java.nio.file.Path;
 
 public class GlobalContext {
 
-  private final Path rootClassPath;
   private final AppBuildTool buildTool;
   private final Path projectRootDir;
-  private final Path buildToolHome; // todo detect automatically in the future
+  private final Path projectSourcesDir;
+  private final Path sourceRootFilePath;
   private final Path
       workDirectory; // todo set it automatically like temp folder hardcode and remove like auto
-                     // closeable;
 
-  public GlobalContext(String workDirectory, String rootClassPath, String buildToolHome) {
-    this.rootClassPath = PathResolver.resolve(rootClassPath);
-    this.buildToolHome = PathResolver.resolve(buildToolHome);
+  // closeable;
+
+  public GlobalContext(String pathToJavaFile, String workDirectory) {
     this.workDirectory = PathResolver.resolve(workDirectory);
-    buildTool = AppBuildTool.getInstance(this.rootClassPath);
+    sourceRootFilePath = JavaFileUtil.getSourceRootFilePath(pathToJavaFile);
+    projectSourcesDir =
+        Path.of(pathToJavaFile.substring(0, pathToJavaFile.indexOf(sourceRootFilePath.toString())));
+    buildTool = AppBuildTool.getInstance(projectSourcesDir);
     projectRootDir = buildTool.getProjectRootDir();
     createDirs();
   }
 
-  public Path getRootClassPath() {
-    return rootClassPath;
-  }
-
   public Path getProjectRootDir() {
     return projectRootDir;
-  }
-
-  public AppBuildTool getBuildTool() {
-    return buildTool;
-  }
-
-  public Path getBuildToolHome() {
-    return buildToolHome;
   }
 
   public Path getWorkDirectory() {
@@ -44,13 +35,21 @@ public class GlobalContext {
   }
 
   public String getProjectClassPath() {
-    return buildTool.resolveClasspath(this);
+    return buildTool.resolve(this);
   }
 
-  private void createDirs(){
+  private void createDirs() {
     var workDirFolder = workDirectory.toFile();
     if (!workDirFolder.exists()) {
       workDirFolder.mkdir();
     }
+  }
+
+  public Path getProjectSourcesDir() {
+    return projectSourcesDir;
+  }
+
+  public Path getSourceRootFilePath() {
+    return sourceRootFilePath;
   }
 }
