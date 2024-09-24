@@ -17,16 +17,16 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class FieldTypeClassVisitor extends ClassVisitor {
 
-  private final String currentClassPath;
+  private final Path currentClassPath;
   private final MultiKeyMap<String, String> rowNumberAndNameToType;
   private String className;
 
-  public FieldTypeClassVisitor(String currentClassPath) {
+  public FieldTypeClassVisitor(Path currentClassPath) {
     this(currentClassPath, new MultiKeyMap<>());
   }
 
   private FieldTypeClassVisitor(
-      String currentClassPath, MultiKeyMap<String, String> rowNumberAndNameToType) {
+      Path currentClassPath, MultiKeyMap<String, String> rowNumberAndNameToType) {
     super(ASM9);
     this.currentClassPath = currentClassPath;
     this.rowNumberAndNameToType = rowNumberAndNameToType;
@@ -52,8 +52,8 @@ public class FieldTypeClassVisitor extends ClassVisitor {
     if (!className.equals(outerName)) {
       return;
     }
-    var rootFolder = Path.of(currentClassPath).getParent();
-    var innerClassPath = rootFolder.resolve(LoaderUtil.getClassName(name) + ".class").toString();
+    var rootFolder = currentClassPath.getParent();
+    var innerClassPath = rootFolder.resolve(LoaderUtil.getClassName(name) + ".class");
     if (currentClassPath.equals(innerClassPath)) {
       return;
     }

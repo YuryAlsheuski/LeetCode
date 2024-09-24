@@ -1,14 +1,15 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
-import com.alsheuski.reflection.result.resolver.PathResolver;
+import com.alsheuski.reflection.result.util.FileUtil;
+
 import java.io.IOException;
 import java.nio.file.Path;
 
 public class Maven extends AppBuildTool {
   // todo - hardcode! check dynamically in the future
   private static final Path HOME =
-      PathResolver.resolve("/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin");
+      FileUtil.resolvePath("/Applications/IntelliJ IDEA.app/Contents/plugins/maven/lib/maven3/bin");
 
   Maven(Path projectRootDir) {
     super(projectRootDir);

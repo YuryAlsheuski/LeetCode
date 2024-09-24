@@ -62,9 +62,9 @@ public class ClassDepsVisitor {
 
       classNameToMetaClass.put(className, targetClass);
     }
-    var classPath = Path.of(rootClassPath,className + ".class");
+    var classPath = Path.of(rootClassPath, className + ".class");
 
-    loadClass(classPath.toString(), getInternalVisitor(context));
+    loadClass(classPath, getInternalVisitor(context));
 
     if (currentLevelClasses.isEmpty()) { // level completed
       deep = deep - 1;
@@ -128,7 +128,7 @@ public class ClassDepsVisitor {
         context.setLoadingContextSignature(signature);
         typeResolver.resolveClassSignature(context);
 
-        if(context.equals(rootClassLoadingContext)){
+        if (context.equals(rootClassLoadingContext)) {
           return;
         }
 

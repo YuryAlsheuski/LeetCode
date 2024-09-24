@@ -1,8 +1,7 @@
 package com.alsheuski.reflection.result.context;
 
 import com.alsheuski.reflection.result.context.build.tool.AppBuildTool;
-import com.alsheuski.reflection.result.resolver.PathResolver;
-import com.alsheuski.reflection.result.util.JavaFileUtil;
+import com.alsheuski.reflection.result.util.FileUtil;
 import java.nio.file.Path;
 
 public class GlobalContext {
@@ -18,9 +17,9 @@ public class GlobalContext {
   // closeable;
 
   public GlobalContext(String pathToJavaFile, String workDirectory) {
-    this.workDirectory = PathResolver.resolve(workDirectory);
-    filePath = PathResolver.resolve(pathToJavaFile);
-    sourceRootFilePath = JavaFileUtil.getSourceRootFilePath(filePath);
+    this.workDirectory = FileUtil.resolvePath(workDirectory);
+    filePath = FileUtil.resolvePath(pathToJavaFile);
+    sourceRootFilePath = FileUtil.getSourceRootFilePath(filePath);
     projectSourcesDir =
         Path.of(
             filePath

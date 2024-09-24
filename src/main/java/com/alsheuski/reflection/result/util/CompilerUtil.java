@@ -6,13 +6,13 @@ import javax.tools.ToolProvider;
 
 public class CompilerUtil {
 
-  public static Path compile(String sourceFilePath, GlobalContext context) {
+  public static Path compile(Path sourceFilePath, GlobalContext context) {
     var outputDir = context.getWorkDirectory();
     doCompile(sourceFilePath, context);
     return outputDir.resolve(context.getSourceRootFilePath() + ".class");
   }
 
-  private static void doCompile(String sourceFilePath, GlobalContext context) {
+  private static void doCompile(Path sourceFilePath, GlobalContext context) {
     var compiler = ToolProvider.getSystemJavaCompiler();
 
     if (compiler == null) {
@@ -30,7 +30,7 @@ public class CompilerUtil {
           "-d",
           context.getWorkDirectory().toString(),
           "-g",
-          sourceFilePath
+          sourceFilePath.toString()
         };
 
     var compilationResult = compiler.run(null, null, null, options);

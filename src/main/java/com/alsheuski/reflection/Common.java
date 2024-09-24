@@ -63,6 +63,10 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
     var b = 0;
     var s = 0;
     pp.primitivesTest(null);
+    GenericParent zz = new GenericChild();
+    System.err.println(zz);
+    Object fff = zz.getParccdcdcentGenericArr(null);
+    System.err.println(fff);
   }
 
  public String getALabel(List<ClassA> aas, List<String> second) {

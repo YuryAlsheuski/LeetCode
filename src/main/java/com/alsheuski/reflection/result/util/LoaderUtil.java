@@ -8,7 +8,7 @@ import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -252,9 +252,9 @@ public class LoaderUtil {
     return parseGenericMethodPrefix(methodGenericArgs).map(prefix -> prefix + " ").orElse("");
   }
 
-  public static void loadClass(String classPath, ClassVisitor visitor) {
+  public static void loadClass(Path classPath, ClassVisitor visitor) {
     try {
-      var classBytes = Files.readAllBytes(Paths.get(classPath));
+      var classBytes = Files.readAllBytes(classPath);
       var classReader = new ClassReader(classBytes);
       classReader.accept(visitor, EXPAND_FRAMES);
     } catch (IOException ex) {
