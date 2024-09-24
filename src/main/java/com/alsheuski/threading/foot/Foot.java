@@ -28,7 +28,7 @@ public class Foot extends Thread {
             return;
           } else {
             lock.wait();
-            System.out.println(name); //try to comment lock.notify() and lock.wait() and see the difference
+            System.out.println(name+1); //try to comment lock.notify() and lock.wait() and see the difference
           }
         }
       } catch (Exception e) {

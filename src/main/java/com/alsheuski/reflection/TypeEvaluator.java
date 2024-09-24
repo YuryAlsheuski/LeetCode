@@ -1,5 +1,6 @@
 package com.alsheuski.reflection;
 
+import com.alsheuski.sudoku.Solver;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -19,7 +20,10 @@ public class TypeEvaluator {
   public static void main(String[] args) throws IOException {
     String filePath = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/src/main/java/com/alsheuski/reflection/Test.java";
     String source = readFileToString(filePath);
-
+    Common cc = new Common("");
+    Solver solver = new Solver(null);
+    System.out.println(solver);
+    System.err.println(cc);
     ASTParser parser = ASTParser.newParser(AST.JLS21);
     parser.setSource(source.toCharArray());
     parser.setKind(ASTParser.K_COMPILATION_UNIT);

@@ -11,6 +11,7 @@ public class Common extends ParentForCommonClass{
     String[] arr = new String [1];
     var ppa = new GenericChild();List<String> ff = new ArrayList<>();
     test();
+    test2();
     System.err.println(ppa);
     System.err.println(ff);
     GenericParent<?,?,?> parent = new GenericChild();

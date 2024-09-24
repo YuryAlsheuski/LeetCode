@@ -3,6 +3,9 @@ package com.alsheuski.reflection.result.preprocessor;
 import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 
 import com.alsheuski.reflection.result.context.GlobalContext;
+import com.alsheuski.reflection.result.preprocessor.replacer.JavaFileContentReplacer;
+import com.alsheuski.reflection.result.preprocessor.replacer.RealTypeVisitorProvider;
+import com.alsheuski.reflection.result.preprocessor.replacer.VarTypeVisitorProvider;
 import com.alsheuski.reflection.result.resolver.PathResolver;
 import com.alsheuski.reflection.result.visitor.FieldTypeClassVisitor;
 import java.io.File;
@@ -19,17 +22,19 @@ public class JavaFilePreprocessor {
   public static String removeVarTypes(String pathToJavaFile, String pathToCompiledClass)
       throws IOException {
 
-    var visitor = new FieldTypeClassVisitor(pathToCompiledClass);
-    loadClass(pathToCompiledClass, visitor);
+    var asmVisitor = new FieldTypeClassVisitor(pathToCompiledClass);
+    loadClass(pathToCompiledClass, asmVisitor);
 
-    return new JavaFileTypeReplacer().replaceVarTypes(pathToJavaFile, visitor.getRowNumbersMap());
+    var jdtVisitorProvider = new RealTypeVisitorProvider(asmVisitor.getRowNumbersMap());
+    return JavaFileContentReplacer.replace(pathToJavaFile, jdtVisitorProvider);
   }
 
   public static Path simplifyJavaFileTypes(String pathToJavaFile, GlobalContext context)
       throws IOException {
 
     var javaFilePath = PathResolver.resolve(pathToJavaFile);
-    var content = new JavaFileTypeReplacer().replaceTypesToVar(javaFilePath.toString());
+    var content =
+        JavaFileContentReplacer.replace(javaFilePath.toString(), new VarTypeVisitorProvider());
     var newJavaFilePath = context.getWorkDirectory().resolve(javaFilePath.getFileName());
     writeToFile(newJavaFilePath.toFile(), content);
 
