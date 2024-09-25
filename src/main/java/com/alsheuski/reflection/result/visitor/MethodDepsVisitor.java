@@ -1,33 +1,37 @@
 package com.alsheuski.reflection.result.visitor;
 
 import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
+import static org.objectweb.asm.Opcodes.ASM9;
 
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
-import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.Argument;
+import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 
 // todo IMPORTANT works fine but try to migrate to MethodNode
 public class MethodDepsVisitor extends MethodVisitor {
 
-  private final ClassLoadingQueue nextLevelQueue;
+  private final Map<String, List<Consumer<MetaClass>>> nextLevelQueue;
   private final ClassLoadingContext context;
   private final Method currentMethod;
   private final ClassTypeResolver typeResolver;
 
   public MethodDepsVisitor(
       ClassTypeResolver typeResolver,
-      ClassLoadingQueue nextLevelQueue,
+      Map<String, List<Consumer<MetaClass>>> nextLevelQueue,
       ClassLoadingContext context,
       Method currentMethod) {
 
-    super(Opcodes.ASM9);
+    super(ASM9);
     this.nextLevelQueue = nextLevelQueue;
     this.context = context;
     this.currentMethod = currentMethod;
@@ -64,15 +68,15 @@ public class MethodDepsVisitor extends MethodVisitor {
     if (context.hasChild()) {
       return;
     }
-
-    nextLevelQueue.add(
-        owner,
+    var actions = nextLevelQueue.computeIfAbsent(owner, k -> new ArrayList<>());
+    actions.add(
         nextClazz -> {
           var methodName = isConstructor(name) ? nextClazz.getName() : name;
           var maybeMethod = nextClazz.findMethod(descriptor, methodName);
 
           maybeMethod.ifPresent(method -> method.addCallFromClass(context.getClassFullName()));
         });
+    nextLevelQueue.put(owner, actions);
   }
 
   @Override

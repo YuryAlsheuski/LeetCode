@@ -5,42 +5,36 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 import static org.objectweb.asm.ClassWriter.COMPUTE_FRAMES;
 import static org.objectweb.asm.Opcodes.ASM9;
 
-import com.alsheuski.reflection.result.config.ConfigManager;
+import com.alsheuski.reflection.result.config.ClassVisitorConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
-import com.alsheuski.reflection.result.context.ClassLoadingQueue;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.function.Consumer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 
 public class ClassDepsVisitor {
 
-  private final Predicate<String> classPathFilter;
   private final Map<String, MetaClass> classNameToMetaClass;
   private final Set<String> currentLevelClasses;
-  private final ConfigManager configManager;
-  private final String rootClassPath;
+  private final ClassVisitorConfigManager configManager;
+  private final Map<String, List<Consumer<MetaClass>>> nextLevelQueue;
   private int deep;
-  private ClassLoadingQueue nextLevelQueue;
   private ClassLoadingContext rootClassLoadingContext;
 
-  public ClassDepsVisitor(String rootClassPath, ConfigManager configManager, int deep) {
-
-    this.rootClassPath = rootClassPath;
+  public ClassDepsVisitor(ClassVisitorConfigManager configManager, int deep) {
     this.configManager = configManager;
     this.deep = deep;
-    classPathFilter = configManager.getAllowedClassPaths();
     classNameToMetaClass = new HashMap<>();
     currentLevelClasses = new HashSet<>();
-    nextLevelQueue = new ClassLoadingQueue(classPathFilter);
+    nextLevelQueue = new HashMap<>();
   }
 
   public Map<String, MetaClass> getAllDeps(ClassLoadingContext context) {
@@ -56,34 +50,38 @@ public class ClassDepsVisitor {
     var targetClass = context.getCurrentClass();
     var className = targetClass.getFullName();
 
-    if (context.addToResults()
-        && !classNameToMetaClass.containsKey(className)
-        && classPathFilter.test(className)) {
+    var maybeClassPath = configManager.getClassPath(className);
+    if (maybeClassPath.isEmpty()) {
+      return null;
+    }
 
+    if (context.addToResults() && !classNameToMetaClass.containsKey(className)) {
       classNameToMetaClass.put(className, targetClass);
     }
-    var classPath = Path.of(rootClassPath, className + ".class");
 
-    loadClass(classPath, getInternalVisitor(context));
+    loadClass(maybeClassPath.get(), getInternalVisitor(context));
 
     if (currentLevelClasses.isEmpty()) { // level completed
       deep = deep - 1;
-      if (deep <= 0 || nextLevelQueue.isEmpty()) {
-        return targetClass;
+      if (deep > 0 && !nextLevelQueue.isEmpty()) {
+        visitNextLevel();
       }
-      visitNextLevel();
     }
     return targetClass;
   }
 
   private void visitNextLevel() {
-    currentLevelClasses.addAll(nextLevelQueue.getClasses());
+    currentLevelClasses.addAll(nextLevelQueue.keySet());
 
-    var entrySet = nextLevelQueue.getEntries();
-    nextLevelQueue = new ClassLoadingQueue(classPathFilter);
+    var entrySet = new HashSet<>(nextLevelQueue.entrySet());
+    nextLevelQueue.clear();
 
     for (var entry : entrySet) {
       var nextClassName = entry.getKey();
+
+      if (!configManager.isAllowedClass(nextClassName)) {
+        continue;
+      }
 
       var rootClass = rootClassLoadingContext.getClassFullName();
       var addToResults =
@@ -98,10 +96,6 @@ public class ClassDepsVisitor {
           classNameToMetaClass.containsKey(nextClassName)
               ? classNameToMetaClass.get(nextClassName)
               : visit(nextClassContext);
-
-      if (nextClass == null) {
-        continue;
-      }
 
       var nexLoaders = entry.getValue();
       nexLoaders.forEach(nextLoader -> nextLoader.accept(nextClass));
@@ -132,7 +126,7 @@ public class ClassDepsVisitor {
           return;
         }
 
-        var hasValidParent = classPathFilter.test(superName);
+        var hasValidParent = configManager.isAllowedClass(superName);
         if (hasValidParent) {
           ClassDepsVisitor.this.visit(new ClassLoadingContext(superName, context));
         }
@@ -168,17 +162,14 @@ public class ClassDepsVisitor {
         var isConstructor = isConstructor(name);
         var methodName = isConstructor ? currentClass.getName() : name;
         var type = typeResolver.getMethodReturnType(descriptor, signature);
-        var method =
-            currentClass
-                .findMethod(descriptor, name)
-                .map(
-                    existed -> {
-                      existed.setReturnType(type);
-                      return existed;
-                    })
-                .orElse(new Method(access, descriptor, type, methodName, isConstructor));
-
-        return method;
+        return currentClass
+            .findMethod(descriptor, name)
+            .map(
+                existed -> {
+                  existed.setReturnType(type);
+                  return existed;
+                })
+            .orElse(new Method(access, descriptor, type, methodName, isConstructor));
       }
     };
   }

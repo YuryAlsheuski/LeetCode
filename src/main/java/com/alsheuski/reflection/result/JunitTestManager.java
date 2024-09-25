@@ -4,7 +4,7 @@ import static com.alsheuski.reflection.result.util.LoaderUtil.buildClassesMetada
 import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 
 import com.alsheuski.reflection.result.config.ClassVisitorConfig;
-import com.alsheuski.reflection.result.config.ConfigManager;
+import com.alsheuski.reflection.result.config.ClassVisitorConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.preprocessor.modifier.JavaCodeModifier;
@@ -13,7 +13,6 @@ import com.alsheuski.reflection.result.util.FileUtil;
 import com.alsheuski.reflection.result.visitor.ClassDepsVisitor;
 import com.alsheuski.reflection.result.visitor.FieldTypeClassVisitor;
 import java.util.ArrayList;
-import java.util.function.Predicate;
 
 public class JunitTestManager {
 
@@ -54,14 +53,12 @@ public class JunitTestManager {
 
   private String generateDepsData() {
     var className = context.getSourceRootFilePath().toString();
-    var allowedClassPaths =
-        (Predicate<String>) path -> path.startsWith("com/alsheuski"); // todo make generic
     var configManager =
-        new ConfigManager(allowedClassPaths)
+        new ClassVisitorConfigManager(context.getWorkDirectory())
             .addConfig(new ClassVisitorConfig(className, i -> true));
 
     var result =
-        new ClassDepsVisitor(context.getWorkDirectory().toString(), configManager, 2)
+        new ClassDepsVisitor(configManager, 2)
             .getAllDeps(new ClassLoadingContext(className, false));
 
     return buildClassesMetadata(className, new ArrayList<>(result.values()));
