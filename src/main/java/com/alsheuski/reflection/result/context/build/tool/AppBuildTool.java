@@ -1,16 +1,18 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-
 import com.alsheuski.reflection.result.context.GlobalContext;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 public abstract class AppBuildTool {
 
@@ -42,28 +44,44 @@ public abstract class AppBuildTool {
 
   public abstract String resolve(GlobalContext context);
 
-  public static AppBuildTool getInstance(Path rootClassPath) {
+  public static AppBuildTool getInstance(Path path) {
     if (INSTANCE == null) {
       synchronized (AppBuildTool.class) {
         if (INSTANCE == null) {
-          INSTANCE = resolveToolType(rootClassPath);
+          INSTANCE = new BuildToolResolver().resolveToolType(path);
         }
       }
     }
     return INSTANCE;
   }
 
-  private static AppBuildTool resolveToolType(Path path) {
-    var folder = path.toFile();
-    if (!folder.exists() || folder.isFile()) {
-      return null;
+  private static class BuildToolResolver {
+    private File configFile;
+
+    private AppBuildTool resolveToolType(Path path) {
+      resolveConfigFile(path);
+      if (configFile == null) {
+        return null;
+      }
+
+      return BuildToolType.get(configFile.getName()).getInstance(configFile.toPath().getParent());
     }
-    var configFile =
-        folder.listFiles(f -> BuildToolType.getConfigFileNames().contains(f.getName()));
-    if (configFile != null && configFile.length != 0) {
-      return BuildToolType.get(configFile[0].getName()).getInstance(path);
+
+    private void resolveConfigFile(Path path) {
+      if (path == null) {
+        return;
+      }
+      var folder = path.toFile();
+      if (!folder.exists() || folder.isFile()) {
+        return;
+      }
+      var configFiles =
+              folder.listFiles(f -> BuildToolType.getConfigFileNames().contains(f.getName()));
+      if (configFiles != null && configFiles.length != 0) {
+        configFile = configFiles[0];
+      }
+      resolveConfigFile(path.getParent());
     }
-    return resolveToolType(path.getParent());
   }
 
   private enum BuildToolType {
