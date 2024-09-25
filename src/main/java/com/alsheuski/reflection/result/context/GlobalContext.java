@@ -20,11 +20,13 @@ public class GlobalContext {
     this.workDirectory = FileUtil.resolvePath(workDirectory);
     filePath = FileUtil.resolvePath(pathToJavaFile);
     sourceRootFilePath = FileUtil.getSourceRootFilePath(filePath);
+    //todo not works for multiproject projects
     projectSourcesDir =
         Path.of(
             filePath
                 .toString()
                 .substring(0, filePath.toString().indexOf(sourceRootFilePath.toString())));
+
     buildTool = AppBuildTool.getInstance(projectSourcesDir);
     projectRootDir = buildTool.getProjectRootDir();
     createDirs();

@@ -1,21 +1,23 @@
 package com.alsheuski.reflection.result.visitor;
 
-import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
-import static org.objectweb.asm.Opcodes.ASM9;
-
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.model.Argument;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
+import org.objectweb.asm.Handle;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import org.objectweb.asm.Handle;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
+
+import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
+import static org.objectweb.asm.Opcodes.ASM9;
 
 // todo IMPORTANT works fine but try to migrate to MethodNode
 public class MethodDepsVisitor extends MethodVisitor {
@@ -47,8 +49,8 @@ public class MethodDepsVisitor extends MethodVisitor {
 
     var maybeHandle =
         Arrays.stream(bootstrapMethodArguments)
-            .filter(args -> args instanceof Handle)
-            .map(handle -> (Handle) handle)
+                .filter(Handle.class::isInstance)
+                .map(Handle.class::cast)
             .findFirst();
 
     maybeHandle.ifPresent(
@@ -65,10 +67,11 @@ public class MethodDepsVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
+    var ownerName = Path.of(owner).toString();
     if (context.hasChild()) {
       return;
     }
-    var actions = nextLevelQueue.computeIfAbsent(owner, k -> new ArrayList<>());
+    var actions = nextLevelQueue.computeIfAbsent(ownerName, k -> new ArrayList<>());
     actions.add(
         nextClazz -> {
           var methodName = isConstructor(name) ? nextClazz.getName() : name;
@@ -76,7 +79,7 @@ public class MethodDepsVisitor extends MethodVisitor {
 
           maybeMethod.ifPresent(method -> method.addCallFromClass(context.getClassFullName()));
         });
-    nextLevelQueue.put(owner, actions);
+    nextLevelQueue.put(ownerName, actions);
   }
 
   @Override
