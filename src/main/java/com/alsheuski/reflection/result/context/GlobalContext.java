@@ -34,7 +34,7 @@ public class GlobalContext {
   }
 
   public String getProjectClassPath() {
-    return buildTool.resolve(this);
+    return buildTool.getProjectClassPath();
   }
 
   private void createDirs() {

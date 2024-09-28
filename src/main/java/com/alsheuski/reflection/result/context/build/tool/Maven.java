@@ -1,8 +1,6 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
-import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.util.FileUtil;
-
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -16,7 +14,7 @@ public class Maven extends AppBuildTool {
   }
 
   @Override
-  public String resolve(GlobalContext context) {
+  public String getProjectClassPath() {
     try (var reader =
         runCommands(
             HOME.resolve("mvn").toString(),
@@ -33,5 +31,10 @@ public class Maven extends AppBuildTool {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public String getProjectEncoding() {
+    return "";
   }
 }

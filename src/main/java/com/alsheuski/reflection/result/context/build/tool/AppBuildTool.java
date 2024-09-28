@@ -3,7 +3,6 @@ package com.alsheuski.reflection.result.context.build.tool;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import com.alsheuski.reflection.result.context.GlobalContext;
 import com.alsheuski.reflection.result.util.FileUtil;
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,7 +47,8 @@ public abstract class AppBuildTool {
     return projectRootDir;
   }
 
-  public abstract String resolve(GlobalContext context);
+  public abstract String getProjectClassPath();
+  public abstract String getProjectEncoding();
 
   public static AppBuildTool getInstance(Path path) {
     if (INSTANCE == null) {
