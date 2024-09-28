@@ -12,7 +12,8 @@ import java.util.regex.Pattern;
 public class FileUtil {
 
   private static final Pattern CLASS_NAME_PATTERN =
-      Pattern.compile("(?:public\\s+)?(?:abstract\\s+)?class\\s+(\\w+)");
+      Pattern.compile(
+          "(?:public\\s+)?(?:abstract\\s+)?(?:class|enum|interface|@interface)\\s+(\\w+)");
 
   private FileUtil() {}
 
