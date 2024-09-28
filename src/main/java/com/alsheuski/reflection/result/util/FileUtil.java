@@ -7,7 +7,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FileUtil {
 
@@ -22,7 +24,7 @@ public class FileUtil {
     return Paths.get(systemIndependentPath, parts).toAbsolutePath().normalize();
   }
 
-  public static Path getSourceRootFilePath(Path sourceFilePath) {
+  public static Optional<Path> getSourceRootFilePath(Path sourceFilePath) {
     try (var reader = new BufferedReader(new FileReader(sourceFilePath.toFile()))) {
       var line = "";
       var packageName = "";
@@ -52,11 +54,14 @@ public class FileUtil {
       }
 
       if (className.isEmpty()) {
-        throw new IllegalArgumentException("No class found in the provided source file.");
+        System.err.println(
+            "Wrong class content:\n" + reader.lines().collect(Collectors.joining("\n")));
+        return Optional.empty();
       }
 
       var packagePath = getPackagePath(packageName.split("\\."));
-      return packagePath == null ? Path.of(className) : packagePath.resolve(className);
+      var result = packagePath == null ? Path.of(className) : packagePath.resolve(className);
+      return Optional.of(result);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

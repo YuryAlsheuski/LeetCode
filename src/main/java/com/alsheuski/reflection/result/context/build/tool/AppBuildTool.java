@@ -88,7 +88,10 @@ public abstract class AppBuildTool {
           }
           var filePath = file.toPath();
           var sourceRootFilePath = FileUtil.getSourceRootFilePath(filePath);
-          var index = filePath.toString().indexOf(sourceRootFilePath.toString());
+          if (sourceRootFilePath.isEmpty()) {
+            continue;
+          }
+          var index = filePath.toString().indexOf(sourceRootFilePath.get().toString());
           if (index == -1) { // for cases when some .java files exists out of the source path
             continue;
           }
