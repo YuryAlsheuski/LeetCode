@@ -1,18 +1,20 @@
 package com.alsheuski.reflection.result.context.build.tool;
 
-import com.alsheuski.reflection.result.context.GlobalContext;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
+import com.alsheuski.reflection.result.context.GlobalContext;
+import com.alsheuski.reflection.result.util.FileUtil;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 public abstract class AppBuildTool {
 
@@ -38,6 +40,10 @@ public abstract class AppBuildTool {
     return null;
   }
 
+  public String getProjectSourceFilesPath() {
+    return new SourceFolderResolver(projectRootDir.toFile()).getProjectSourceFilesPath();
+  }
+
   public Path getProjectRootDir() {
     return projectRootDir;
   }
@@ -53,6 +59,49 @@ public abstract class AppBuildTool {
       }
     }
     return INSTANCE;
+  }
+
+  private static class SourceFolderResolver {
+
+    private final Set<String> folders = new HashSet<>();
+    private String currentFolder = "-1";
+
+    SourceFolderResolver(File folder) {
+      findSourceFolders(folder);
+    }
+
+    public void findSourceFolders(File folder) {
+
+      var files = folder.listFiles();
+      if (files != null) {
+        for (var file : files) {
+          if (file.getAbsolutePath().startsWith(currentFolder)) {
+            break;
+          }
+          if (file.isDirectory()) {
+            findSourceFolders(file);
+            continue;
+          }
+          var fileName = file.getName();
+          if (!fileName.endsWith(".java")) {
+            continue;
+          }
+          var filePath = file.toPath();
+          var sourceRootFilePath = FileUtil.getSourceRootFilePath(filePath);
+          var index = filePath.toString().indexOf(sourceRootFilePath.toString());
+          if (index == -1) { // for cases when some .java files exists out of the source path
+            continue;
+          }
+          var sourceFolderPath = Path.of(filePath.toString().substring(0, index));
+          folders.add(sourceFolderPath.toString());
+          currentFolder = sourceFolderPath.toString();
+        }
+      }
+    }
+
+    String getProjectSourceFilesPath() {
+      return String.join(File.pathSeparator, folders);
+    }
   }
 
   private static class BuildToolResolver {
@@ -76,7 +125,7 @@ public abstract class AppBuildTool {
         return;
       }
       var configFiles =
-              folder.listFiles(f -> BuildToolType.getConfigFileNames().contains(f.getName()));
+          folder.listFiles(f -> BuildToolType.getConfigFileNames().contains(f.getName()));
       if (configFiles != null && configFiles.length != 0) {
         configFile = configFiles[0];
       }
@@ -90,7 +139,7 @@ public abstract class AppBuildTool {
 
     private static final Map<String, BuildToolType> TYPES =
         Arrays.stream(BuildToolType.values()).collect(toMap(k -> k.configFileName, v -> v));
-    private static final List<String> configFileNames =
+    private static final List<String> CONFIG_FILE_NAMES =
         Arrays.stream(BuildToolType.values()).map(tool -> tool.configFileName).collect(toList());
 
     private final String configFileName;
@@ -102,7 +151,7 @@ public abstract class AppBuildTool {
     }
 
     static List<String> getConfigFileNames() {
-      return configFileNames;
+      return CONFIG_FILE_NAMES;
     }
 
     static BuildToolType get(String configFileName) {
