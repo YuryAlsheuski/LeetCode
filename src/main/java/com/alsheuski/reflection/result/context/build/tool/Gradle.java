@@ -74,7 +74,7 @@ public class Gradle extends AppBuildTool {
                 + " doLast {\n"
                 + "        def compileJavaTask = tasks.findByName('compileJava')\n"
                 + "        if (compileJavaTask) {\n"
-                + "            println \" #${compileJavaTask.options.encoding}\"\n"
+                + "            println \"#${compileJavaTask.options.encoding}\"\n"
                 + "        }\n"
                 + "    }\n"
                 + "    }\n"
