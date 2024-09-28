@@ -24,6 +24,7 @@ public class Maven extends AppBuildTool {
       return reader
           .lines()
           .filter(line -> !line.trim().isEmpty())
+          .filter(line -> !line.contains(projectRootDir.toString()))
           .filter(line -> !line.startsWith("["))
           .findFirst()
           .orElse(null);

@@ -26,7 +26,6 @@ public class CompilerUtil {
           context.getProjectSourceFilesPath(),
           "-classpath",
           context.getProjectClassPath(),
-          "-Xprefer:source",
           "-d",
           context.getWorkDirectory().toString(),
           "-encoding",

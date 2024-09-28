@@ -18,7 +18,7 @@ import java.util.function.Function;
 public abstract class AppBuildTool {
 
   private static AppBuildTool instance;
-  private final Path projectRootDir;
+  protected final Path projectRootDir;
 
   protected AppBuildTool(Path projectRootDir) {
     this.projectRootDir = projectRootDir;
