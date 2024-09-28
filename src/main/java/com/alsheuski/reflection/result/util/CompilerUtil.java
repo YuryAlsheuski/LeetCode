@@ -29,6 +29,8 @@ public class CompilerUtil {
           "-Xprefer:source",
           "-d",
           context.getWorkDirectory().toString(),
+          "-encoding",
+          context.getProjectEncoding(),
           "-g",
           sourceFilePath.toString()
         };

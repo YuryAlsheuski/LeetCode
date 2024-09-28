@@ -34,7 +34,7 @@ public class Maven extends AppBuildTool {
   }
 
   @Override
-  public String getProjectEncoding() {
-    return "";
+  public String getEncoding() {
+    return null;
   }
 }

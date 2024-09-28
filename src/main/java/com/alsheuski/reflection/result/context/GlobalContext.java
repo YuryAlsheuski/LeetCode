@@ -7,7 +7,6 @@ import java.nio.file.Path;
 public class GlobalContext {
 
   private final AppBuildTool buildTool;
-  private final Path projectRootDir;
   private final Path sourceRootFilePath;
   private final Path
       workDirectory; // todo set it automatically like temp folder hardcode and remove like auto
@@ -21,12 +20,7 @@ public class GlobalContext {
         FileUtil.getSourceRootFilePath(filePath)
             .orElseThrow(() -> new RuntimeException("Wrong testable file content!"));
     buildTool = AppBuildTool.getInstance(filePath.getParent());
-    projectRootDir = buildTool.getProjectRootDir();
     createDirs();
-  }
-
-  public Path getProjectRootDir() {
-    return projectRootDir;
   }
 
   public Path getWorkDirectory() {
@@ -35,6 +29,10 @@ public class GlobalContext {
 
   public String getProjectClassPath() {
     return buildTool.getProjectClassPath();
+  }
+
+  public String getProjectEncoding(){
+    return buildTool.getProjectEncoding();
   }
 
   private void createDirs() {

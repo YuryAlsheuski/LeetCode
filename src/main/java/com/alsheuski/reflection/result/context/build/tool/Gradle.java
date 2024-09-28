@@ -39,10 +39,15 @@ public class Gradle extends AppBuildTool {
   }
 
   @Override
-  public String getProjectEncoding() {
+  public String getEncoding() {
     try (var reader =
         runCommands(gradlewFile.toString(), "-I", scriptFile.toString(), "getEncoding")) {
-      return String.join(DELIMITER, reader.lines().collect(toSet()));
+      return reader
+          .lines()
+          .filter(line -> line.startsWith("#"))
+          .map(line -> line.replace("#", ""))
+          .findFirst()
+          .orElse(null);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -50,6 +55,7 @@ public class Gradle extends AppBuildTool {
 
   // todo here and for other places needs to handle errors correctly
   // todo copy file with content from resources in the future
+  // todo chrck other encoding cases. Here it is only compileJavaTask
   private File createTaskScript() {
     try {
       var tempDir = Files.createTempDirectory("gradle");
@@ -65,14 +71,12 @@ public class Gradle extends AppBuildTool {
                 + "    }\n"
                 + "\n"
                 + "    task getEncoding {\n"
-                + "        doLast {\n"
-                + "            if (project.hasProperty('compileJava') && project.tasks.findByName('compileJava') != null) {\n"
-                + "                def encoding = tasks.compileJava.options.encoding ?: 'UTF-8'\n"
-                + "                println $encoding\"\n"
-                + "            } else {\n"
-                + "                println \"No Java source set found for project '${project.name}'\"\n"
-                + "            }\n"
+                + " doLast {\n"
+                + "        def compileJavaTask = tasks.findByName('compileJava')\n"
+                + "        if (compileJavaTask) {\n"
+                + "            println \" #${compileJavaTask.options.encoding}\"\n"
                 + "        }\n"
+                + "    }\n"
                 + "    }\n"
                 + "}");
         return scriptFile;

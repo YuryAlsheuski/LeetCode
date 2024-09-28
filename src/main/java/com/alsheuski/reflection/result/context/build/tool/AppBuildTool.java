@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 public abstract class AppBuildTool {
 
-  private static AppBuildTool INSTANCE;
+  private static AppBuildTool instance;
   private final Path projectRootDir;
 
   protected AppBuildTool(Path projectRootDir) {
@@ -47,18 +47,27 @@ public abstract class AppBuildTool {
     return projectRootDir;
   }
 
+  public String getProjectEncoding() {
+    var encoding = getEncoding();
+    if (encoding != null) {
+      return encoding;
+    }
+    return "UTF-8";
+  }
+
   public abstract String getProjectClassPath();
-  public abstract String getProjectEncoding();
+
+  protected abstract String getEncoding();
 
   public static AppBuildTool getInstance(Path path) {
-    if (INSTANCE == null) {
+    if (instance == null) {
       synchronized (AppBuildTool.class) {
-        if (INSTANCE == null) {
-          INSTANCE = new BuildToolResolver().resolveToolType(path);
+        if (instance == null) {
+          instance = new BuildToolResolver().resolveToolType(path);
         }
       }
     }
-    return INSTANCE;
+    return instance;
   }
 
   private static class SourceFolderResolver {
