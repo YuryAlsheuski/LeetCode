@@ -23,7 +23,7 @@ public class CompilerUtil {
     var options =
         new String[] {
           "-sourcepath",
-          context.getProjectSourceFilesPath().toString(),
+          context.getProjectSourceFilesPath(),
           "-classpath",
           context.getProjectClassPath(),
           "-Xprefer:source",

@@ -34,7 +34,14 @@ public class FileUtil {
           packageName = line.substring(8, line.indexOf(';')).trim();
           continue;
         }
-        if (line.startsWith("class ") || line.contains(" class ")) {
+        if (line.startsWith("class ")
+            || line.contains(" class ")
+            || line.startsWith("enum ")
+            || line.contains(" enum ")
+            || line.startsWith("interface ")
+            || line.contains(" interface ")
+            || line.startsWith("@interface ")
+            || line.contains(" @interface ")) {
           var matcher = CLASS_NAME_PATTERN.matcher(line);
           if (matcher.find()) {
             className = matcher.group(1);
