@@ -1,5 +1,8 @@
 package com.alsheuski.reflection.result.util;
 
+import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
+import static org.objectweb.asm.Opcodes.ASM9;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.objectweb.asm.ClassVisitor;
 
 public class FileUtil {
 
@@ -24,7 +28,7 @@ public class FileUtil {
     return Paths.get(systemIndependentPath, parts).toAbsolutePath().normalize();
   }
 
-  public static Optional<Path> getSourceRootFilePath(Path sourceFilePath) {
+  public static Optional<Path> getSourceRootJavaFilePath(Path sourceFilePath) {
     try (var reader = new BufferedReader(new FileReader(sourceFilePath.toFile()))) {
       var line = "";
       var packageName = "";
@@ -65,6 +69,25 @@ public class FileUtil {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static Optional<Path> getSourceRootClassFilePath(Path path) {
+    final Path[] result = {Path.of("")};
+    var visitor =
+        new ClassVisitor(ASM9) {
+          @Override
+          public void visit(
+              int version,
+              int access,
+              String name,
+              String signature,
+              String superName,
+              String[] interfaces) {
+            result[0] = result[0].resolve(name + ".class");
+          }
+        };
+    loadClass(path, visitor);
+    return Optional.of(result[0]);
   }
 
   public static void writeToFile(Path filePath, String content) throws IOException {

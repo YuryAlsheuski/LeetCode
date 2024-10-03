@@ -18,10 +18,12 @@ import java.util.function.Function;
 public abstract class AppBuildTool {
 
   private static AppBuildTool instance;
+  private final ProjectFoldersResolver projectFoldersResolver;
   protected final Path projectRootDir;
 
   protected AppBuildTool(Path projectRootDir) {
     this.projectRootDir = projectRootDir;
+    projectFoldersResolver = new ProjectFoldersResolver(projectRootDir.toFile());
   }
 
   protected BufferedReader runCommands(String... commands) {
@@ -40,11 +42,12 @@ public abstract class AppBuildTool {
   }
 
   public String getProjectSourceFilesPath() {
-    return new SourceFolderResolver(projectRootDir.toFile()).getProjectSourceFilesPath();
+    return projectFoldersResolver.getProjectSourceFilesPath();
   }
 
-  public Path getProjectRootDir() {
-    return projectRootDir;
+  protected boolean isClassPath(String path) {
+    return projectFoldersResolver.getProjectClassPathFolders().stream()
+        .anyMatch(p -> path.startsWith(p) || p.startsWith(path));
   }
 
   public String getProjectEncoding() {
@@ -70,12 +73,15 @@ public abstract class AppBuildTool {
     return instance;
   }
 
-  private static class SourceFolderResolver {
+  private static class ProjectFoldersResolver {
 
-    private final Set<String> folders = new HashSet<>();
+    private final Set<String> sourceFileFolders;
+    private final Set<String> classFolders;
     private String currentFolder = "-1";
 
-    SourceFolderResolver(File folder) {
+    ProjectFoldersResolver(File folder) {
+      sourceFileFolders = new HashSet<>();
+      classFolders = new HashSet<>();
       findSourceFolders(folder);
     }
 
@@ -92,11 +98,14 @@ public abstract class AppBuildTool {
             continue;
           }
           var fileName = file.getName();
-          if (!fileName.endsWith(".java")) {
+          if (!fileName.endsWith(".java") && !fileName.endsWith(".class")) {
             continue;
           }
           var filePath = file.toPath();
-          var sourceRootFilePath = FileUtil.getSourceRootFilePath(filePath);
+          var sourceRootFilePath =
+              fileName.endsWith(".java")
+                  ? FileUtil.getSourceRootJavaFilePath(filePath)
+                  : FileUtil.getSourceRootClassFilePath(filePath);
           if (sourceRootFilePath.isEmpty()) {
             continue;
           }
@@ -105,6 +114,7 @@ public abstract class AppBuildTool {
             continue;
           }
           var sourceFolderPath = Path.of(filePath.toString().substring(0, index));
+          var folders = fileName.endsWith(".java") ? sourceFileFolders : classFolders;
           folders.add(sourceFolderPath.toString());
           currentFolder = sourceFolderPath.toString();
         }
@@ -112,7 +122,11 @@ public abstract class AppBuildTool {
     }
 
     String getProjectSourceFilesPath() {
-      return String.join(File.pathSeparator, folders);
+      return String.join(File.pathSeparator, sourceFileFolders);
+    }
+
+    Set<String> getProjectClassPathFolders() {
+      return classFolders;
     }
   }
 

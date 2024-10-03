@@ -17,7 +17,7 @@ public class GlobalContext {
     this.workDirectory = FileUtil.resolvePath(workDirectory);
     filePath = FileUtil.resolvePath(pathToJavaFile);
     sourceRootFilePath =
-        FileUtil.getSourceRootFilePath(filePath)
+        FileUtil.getSourceRootJavaFilePath(filePath)
             .orElseThrow(() -> new RuntimeException("Wrong testable file content!"));
     buildTool = AppBuildTool.getInstance(filePath.getParent());
     createDirs();

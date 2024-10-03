@@ -31,8 +31,8 @@ public class Gradle extends AppBuildTool {
           reader
               .lines()
               .filter(line -> line.contains(DELIMITER))
-              .filter(line -> !line.contains(projectRootDir.toString()))
               .flatMap(line -> Arrays.stream(line.split(DELIMITER)))
+              .filter(path -> !isClassPath(path))
               .collect(toSet()));
     } catch (IOException e) {
       throw new RuntimeException(e);
