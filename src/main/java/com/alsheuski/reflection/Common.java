@@ -1,5 +1,7 @@
 package com.alsheuski.reflection;
 
+import com.alsheuski.reflection.result.Anonimus2;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -92,7 +94,14 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
 
   @Override
   public void test() {
-
+    var obj =
+        new Anonimus() {
+          @Override
+          public Object get() {
+            return new Anonimus2();
+          }
+        };
+    System.err.println(obj);
   }
 
   public class CommonInsider {
