@@ -77,7 +77,7 @@ public abstract class AppBuildTool {
 
     private final Set<String> sourceFileFolders;
     private final Set<String> classFolders;
-    private String currentFolder = "-1";
+    private Path currentFolder = Path.of("-1");
 
     ProjectFoldersResolver(File folder) {
       sourceFileFolders = new HashSet<>();
@@ -90,7 +90,7 @@ public abstract class AppBuildTool {
       var files = folder.listFiles();
       if (files != null) {
         for (var file : files) {
-          if (file.getAbsolutePath().startsWith(currentFolder)) {
+          if (file.toPath().startsWith(currentFolder)) {
             break;
           }
           if (file.isDirectory()) {
@@ -116,7 +116,7 @@ public abstract class AppBuildTool {
           var sourceFolderPath = Path.of(filePath.toString().substring(0, index));
           var folders = fileName.endsWith(".java") ? sourceFileFolders : classFolders;
           folders.add(sourceFolderPath.toString());
-          currentFolder = sourceFolderPath.toString();
+          currentFolder = sourceFolderPath;
         }
       }
     }
