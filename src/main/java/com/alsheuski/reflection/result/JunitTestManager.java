@@ -3,6 +3,9 @@ package com.alsheuski.reflection.result;
 import static com.alsheuski.reflection.result.util.LoaderUtil.buildClassesMetadata;
 import static com.alsheuski.reflection.result.util.LoaderUtil.loadClass;
 
+import com.alsheuski.reflection.result.ai.AnswerExtractor;
+import com.alsheuski.reflection.result.ai.GeminiQAService;
+import com.alsheuski.reflection.result.ai.PromptTemplate;
 import com.alsheuski.reflection.result.config.ClassVisitorConfig;
 import com.alsheuski.reflection.result.config.ClassVisitorConfigManager;
 import com.alsheuski.reflection.result.context.ClassLoadingContext;
@@ -17,15 +20,24 @@ import java.util.ArrayList;
 public class JunitTestManager {
 
   private final GlobalContext context;
+  private final AnswerExtractor extractor;
+  private final PromptTemplate promptTemplate;
 
   public JunitTestManager(String pathToJavaFile, String workingDir) {
     context = new GlobalContext(pathToJavaFile, workingDir);
+    extractor = new GeminiQAService();
+    promptTemplate = new PromptTemplate();
   }
 
-  public String getTestClassCode() {
-    return getJavaFileContent()
-        + "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        + generateDepsData();
+  public String getJUnitTest() {
+    var javaFileContent = getJavaFileContent();
+    var deps = generateDepsData();
+
+    var mocksRequestPrompt = promptTemplate.getMocksRequestPrompt(deps);
+    var mocks = extractor.answer(mocksRequestPrompt);
+    var testCreationRequestPrompt = promptTemplate.getTestRequestPrompt(javaFileContent, mocks);
+
+    return extractor.answer(testCreationRequestPrompt);
   }
 
   private String getJavaFileContent() {

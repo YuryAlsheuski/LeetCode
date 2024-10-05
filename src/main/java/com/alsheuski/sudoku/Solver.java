@@ -1,26 +1,24 @@
 package com.alsheuski.sudoku;
 
+import static com.alsheuski.sudoku.domain.SudokuTable.EMPTY_POSITION_SYMBOL;
+import static java.util.Comparator.comparingLong;
+import static java.util.stream.Collectors.toList;
+
 import com.alsheuski.sudoku.domain.Cell;
 import com.alsheuski.sudoku.domain.CellsContainer;
 import com.alsheuski.sudoku.domain.Square;
 import com.alsheuski.sudoku.domain.SudokuTable;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import static com.alsheuski.sudoku.domain.SudokuTable.EMPTY_POSITION_SYMBOL;
-import static java.util.Comparator.comparingLong;
-import static java.util.stream.Collectors.toList;
 
 public class Solver {
 
   private final SudokuTable table;
   private final List<String> solvedLinePattern;
 
-  public Solver(String[][] table) {
-    this.table = new SudokuConstructor(table).create();
-    solvedLinePattern = buildLinePattern(this.table.getSquares().size());
+  public Solver(SudokuTable table,List<String> solvedLinePattern) {
+    this.table = table;
+    this.solvedLinePattern = solvedLinePattern;
   }
 
   public SudokuTable solve() {
@@ -93,13 +91,5 @@ public class Solver {
       result = result + i;
     }
     return result * newCellsValues.size();
-  }
-
-  private List<String> buildLinePattern(int elementsCount) {
-    List<String> elements = new ArrayList<>(elementsCount);
-    for (int i = 1; i <= elementsCount; i++) {
-      elements.add(String.valueOf(i));
-    }
-    return elements;
   }
 }

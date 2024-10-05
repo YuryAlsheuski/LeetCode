@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
@@ -21,7 +22,7 @@ public class TypeEvaluator {
     String filePath = "/Users/Yury_Alsheuski/Desktop/myProjects/LeetCode/src/main/java/com/alsheuski/reflection/Test.java";
     String source = readFileToString(filePath);
     Common cc = new Common("");
-    Solver solver = new Solver(null);
+    Solver solver = new Solver(null, List.of());
     System.out.println(solver);
     System.err.println(cc);
     ASTParser parser = ASTParser.newParser(AST.JLS21);

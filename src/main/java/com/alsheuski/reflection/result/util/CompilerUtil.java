@@ -22,6 +22,10 @@ public class CompilerUtil {
 
     var options =
         new String[] {
+          "-source",
+          "21",
+          "-target",
+          "21",
           "-sourcepath",
           context.getProjectSourceFilesPath(),
           "-classpath",

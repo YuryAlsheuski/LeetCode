@@ -10,4 +10,5 @@ public class ClassA {
   public void setLabel(String label) {
     this.label = label;
   }
+  public static void testStatic(){}
 }

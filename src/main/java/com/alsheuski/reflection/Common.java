@@ -60,7 +60,7 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
 
     Supplier<String> supp = new CommonInsider().getStr();
     System.err.println(supp.get().length());
-
+    ClassA.testStatic();
     GenericParent<?,?,?> pp = new GenericChild();
     var b = 0;
     var s = 0;
