@@ -10,6 +10,8 @@ import com.alsheuski.reflection.result.context.ClassLoadingContext;
 import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -39,14 +41,12 @@ public class ClassDepsVisitor {
 
   public Map<String, MetaClass> getAllDeps(ClassLoadingContext context) {
     rootClassLoadingContext = context;
-    currentLevelClasses.add(context.getClassFullName());
     visit(context);
     return classNameToMetaClass;
   }
 
   private MetaClass visit(ClassLoadingContext context) {
 
-    currentLevelClasses.remove(context.getClassFullName());
     var targetClass = context.getCurrentClass();
     var className = targetClass.getFullName();
 
@@ -79,10 +79,6 @@ public class ClassDepsVisitor {
     for (var entry : entrySet) {
       var nextClassName = entry.getKey();
 
-      if (!configManager.isAllowedClass(nextClassName)) {
-        continue;
-      }
-
       var rootClass = rootClassLoadingContext.getClassFullName();
       var addToResults =
           !nextClassName.contains(rootClass + "$"); // for nested classes in root class
@@ -92,14 +88,20 @@ public class ClassDepsVisitor {
               ? rootClassLoadingContext
               : new ClassLoadingContext(nextClassName, addToResults);
 
-      var nextClass =
-          classNameToMetaClass.containsKey(nextClassName)
-              ? classNameToMetaClass.get(nextClassName)
-              : visit(nextClassContext);
+      var nextClass = getNext(nextClassContext);
 
       var nexLoaders = entry.getValue();
       nexLoaders.forEach(nextLoader -> nextLoader.accept(nextClass));
     }
+  }
+
+  private MetaClass getNext(ClassLoadingContext context) {
+    var name = context.getClassFullName();
+    if (classNameToMetaClass.containsKey(name)) {
+      return classNameToMetaClass.get(name);
+    }
+    currentLevelClasses.remove(name);
+    return visit(context);
   }
 
   private ClassVisitor getInternalVisitor(ClassLoadingContext context) {
@@ -146,7 +148,7 @@ public class ClassDepsVisitor {
         }
         var method = getMethod(access, name, descriptor, signature);
         context.getCurrentClass().addMethod(method);
-        return new MethodDepsVisitor(typeResolver, nextLevelQueue, context, method);
+        return new MethodDepsVisitor(typeResolver, method, getLoaderAction());
       }
 
       @Override
@@ -170,6 +172,31 @@ public class ClassDepsVisitor {
                   return existed;
                 })
             .orElse(new Method(access, descriptor, type, methodName, isConstructor));
+      }
+
+      private Consumer<MethodDepsVisitor.MethodMetadata> getLoaderAction() {
+        return mData -> {
+          var ownerName = Path.of(mData.getOwner()).toString();
+
+          if (!configManager.isAllowedClass(ownerName)) {
+            return;
+          }
+
+          if (context.hasChild()) {
+            return;
+          }
+          var actions = nextLevelQueue.computeIfAbsent(ownerName, k -> new ArrayList<>());
+          actions.add(
+              nextClazz -> {
+                var methodName =
+                    isConstructor(mData.getName()) ? nextClazz.getName() : mData.getName();
+                var maybeMethod = nextClazz.findMethod(mData.getDescriptor(), methodName);
+
+                maybeMethod.ifPresent(
+                    method -> method.addCallFromClass(context.getClassFullName()));
+              });
+          nextLevelQueue.put(ownerName, actions);
+        };
       }
     };
   }

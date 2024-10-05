@@ -1,42 +1,29 @@
 package com.alsheuski.reflection.result.visitor;
 
-import com.alsheuski.reflection.result.context.ClassLoadingContext;
+import static org.objectweb.asm.Opcodes.ASM9;
+
 import com.alsheuski.reflection.result.model.Argument;
-import com.alsheuski.reflection.result.model.MetaClass;
 import com.alsheuski.reflection.result.model.Method;
 import com.alsheuski.reflection.result.resolver.ClassTypeResolver;
+import java.util.Arrays;
+import java.util.function.Consumer;
 import org.objectweb.asm.Handle;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import static com.alsheuski.reflection.result.util.LoaderUtil.isConstructor;
-import static org.objectweb.asm.Opcodes.ASM9;
-
 // todo IMPORTANT works fine but try to migrate to MethodNode
 public class MethodDepsVisitor extends MethodVisitor {
 
-  private final Map<String, List<Consumer<MetaClass>>> nextLevelQueue;
-  private final ClassLoadingContext context;
   private final Method currentMethod;
   private final ClassTypeResolver typeResolver;
+  private final Consumer<MethodMetadata> loaderAction;
 
   public MethodDepsVisitor(
-      ClassTypeResolver typeResolver,
-      Map<String, List<Consumer<MetaClass>>> nextLevelQueue,
-      ClassLoadingContext context,
-      Method currentMethod) {
+      ClassTypeResolver typeResolver, Method currentMethod, Consumer<MethodMetadata> loaderAction) {
 
     super(ASM9);
-    this.nextLevelQueue = nextLevelQueue;
-    this.context = context;
     this.currentMethod = currentMethod;
+    this.loaderAction = loaderAction;
     this.typeResolver = typeResolver;
   }
 
@@ -49,8 +36,8 @@ public class MethodDepsVisitor extends MethodVisitor {
 
     var maybeHandle =
         Arrays.stream(bootstrapMethodArguments)
-                .filter(Handle.class::isInstance)
-                .map(Handle.class::cast)
+            .filter(Handle.class::isInstance)
+            .map(Handle.class::cast)
             .findFirst();
 
     maybeHandle.ifPresent(
@@ -67,19 +54,7 @@ public class MethodDepsVisitor extends MethodVisitor {
   public void visitMethodInsn(
       int opcode, String owner, String name, String descriptor, boolean isInterface) {
 
-    var ownerName = Path.of(owner).toString();
-    if (context.hasChild()) {
-      return;
-    }
-    var actions = nextLevelQueue.computeIfAbsent(ownerName, k -> new ArrayList<>());
-    actions.add(
-        nextClazz -> {
-          var methodName = isConstructor(name) ? nextClazz.getName() : name;
-          var maybeMethod = nextClazz.findMethod(descriptor, methodName);
-
-          maybeMethod.ifPresent(method -> method.addCallFromClass(context.getClassFullName()));
-        });
-    nextLevelQueue.put(ownerName, actions);
+    loaderAction.accept(new MethodMetadata(owner, name, descriptor));
   }
 
   @Override
@@ -92,5 +67,29 @@ public class MethodDepsVisitor extends MethodVisitor {
     var type = typeResolver.getType(descriptor, signature);
     var arg = new Argument(type, name);
     currentMethod.addArgument(arg);
+  }
+
+  public class MethodMetadata {
+    private final String owner;
+    private final String name;
+    private final String descriptor;
+
+    public MethodMetadata(String owner, String name, String descriptor) {
+      this.owner = owner;
+      this.name = name;
+      this.descriptor = descriptor;
+    }
+
+    public String getOwner() {
+      return owner;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public String getDescriptor() {
+      return descriptor;
+    }
   }
 }
