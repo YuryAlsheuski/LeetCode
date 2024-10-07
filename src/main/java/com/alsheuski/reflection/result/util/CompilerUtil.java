@@ -22,9 +22,7 @@ public class CompilerUtil {
 
     var options =
         new String[] {
-          "-source",
-          "21",
-          "-target",
+          "--release",
           "21",
           "-sourcepath",
           context.getProjectSourceFilesPath(),
