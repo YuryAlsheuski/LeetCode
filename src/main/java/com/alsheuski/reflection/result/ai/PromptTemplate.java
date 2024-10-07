@@ -46,6 +46,7 @@ public class PromptTemplate {
             + "%s"
             + "- use @Rule public zeyt.LoggerRule loggerRule = new LoggerRule(); as global output class field.\n"
             + "- output pattern: <just code here>. No any additional text \n"
+            + "- common mocks settings (if they are exists) for all test methods move to @BeforeAll or other common setup methods.\n"
             + "- for your defined public methods for coverage use ALL necessary mocks and ALL necessary when-thenReturn rules from example below to create effective mocks for specific project classes:\n"
             + "%s";
 
