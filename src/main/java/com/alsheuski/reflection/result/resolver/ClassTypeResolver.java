@@ -29,7 +29,7 @@ public class ClassTypeResolver {
       context.getCurrentClass().setSignature(classSignature);
       return;
     }
-    var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();
+    var childClassSignature = context.getChildClassContext().getCurrentClass().getSignature();//ClassLoadingContext#getChildClassContext() → ClassLoadingContext#getCurrentClass() → MetaClass#getSignature() → String
     var preparedChildSignature = solve(childClassSignature);
 
     var signDict = new GenericArgsVisitor(preparedChildSignature, classSignature).load();
