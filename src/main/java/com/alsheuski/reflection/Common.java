@@ -1,23 +1,23 @@
 package com.alsheuski.reflection;
 
 import com.alsheuski.reflection.result.Anonimus2;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class Common extends ParentForCommonClass<String,String> implements ParentCommonInterface{
+public class Common extends ParentForCommonClass<String, String> implements ParentCommonInterface {
   public Common(String test) {
-    String[] arr = new String [1];
-    var ppa = new GenericChild();List<String> ff = new ArrayList<>();
+    String[] arr = new String[1];
+    var ppa = new GenericChild();
+    List<String> ff = new ArrayList<>();
     test();
     test2();
-    test3();
+    //test3();
     System.err.println(ppa);
     System.err.println(ff);
-    GenericParent<?,?,?> parent = new GenericChild();
+    GenericParent<?, ?, ?> parent = new GenericChild();
     parent.get(null);
     parent.getParentGenericArr(null, null);
 
@@ -25,22 +25,25 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
     var something = new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
     var some = new GenericParent<List<String>, ClassA, Map<String, Double>>().getX(null);
 
-    var result = List.of(1,2,3,4,5)
-            .stream()
-            .filter(i->
-            {
-              int rest =i%2;
-              return rest==0;
-            })
-            .collect(Collectors.toList());
+    System.err.println(something);
+    System.err.println(some);
 
-   for(int loopVar : result){
-     System.err.println(loopVar);
+/*    var result =
+        List.of(1, 2, 3, 4, 5).stream()
+            .filter(
+                i -> {
+                  int rest = i % 2;
+                  return rest == 0;
+                })
+            .collect(Collectors.toList());*/
+
+  /*  for (int loopVar : result) {
+      System.err.println(loopVar);
     }
 
-    for(int loopVar2=0; loopVar2<=result.size(); loopVar2++){
-      System.err.println( loopVar2);
-    }
+    for (int loopVar2 = 0; loopVar2 <= result.size(); loopVar2++) {
+      System.err.println(loopVar2);
+    }*/
 
     new GenericParent<List<String>, ClassA, Map<String, Double>>().superParentGet(null);
     new GenericParent<List<String>, ClassA, Map<String, Double>>().get(null);
@@ -61,7 +64,7 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
     Supplier<String> supp = new CommonInsider().getStr();
     System.err.println(supp.get().length());
     ClassA.testStatic();
-    GenericParent<?,?,?> pp = new GenericChild();
+    GenericParent<?, ?, ?> pp = new GenericChild();
     var b = 0;
     var s = 0;
     pp.primitivesTest(null);
@@ -71,7 +74,7 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
     System.err.println(fff);
   }
 
- public String getALabel(List<ClassA> aas, List<String> second) {
+  public String getALabel(List<ClassA> aas, List<String> second) {
     return aas.stream().map(ClassA::getLabel).collect(Collectors.joining());
   }
 
@@ -90,8 +93,6 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
     System.err.println(insider.getStr());
   }
 
-
-
   @Override
   public void test() {
     var obj =
@@ -106,7 +107,7 @@ public class Common extends ParentForCommonClass<String,String> implements Paren
 
   public class CommonInsider {
     public <T> Supplier<T> getStr() {
-      return ()-> (T) "fdsfsd";
+      return () -> (T) "fdsfsd";
     }
   }
 
